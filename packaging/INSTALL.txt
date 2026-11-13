@@ -1,0 +1,23 @@
+Installing Lucky Comp
+=====================
+
+The easiest way is the installer: download Lucky-Comp.pkg from
+https://github.com/tomdmaguire/lucky-comp/releases/latest and open it.
+These steps are for installing by hand from this zip instead.
+
+1. Copy the plugins into place:
+   - "Lucky Comp.vst3"      -> ~/Library/Audio/Plug-Ins/VST3
+   - "Lucky Comp.component" -> ~/Library/Audio/Plug-Ins/Components   (AU, for Logic and GarageBand)
+
+   In Finder, press Cmd+Shift+G and paste the folder path to open it.
+
+2. Unblock the plugins. Lucky Comp is free and not signed by an Apple developer
+   account, so macOS blocks it the first time. Open Terminal and run:
+
+   xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/"Lucky Comp.vst3"
+   xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/"Lucky Comp.component"
+
+   Alternatively, if your DAW reports the plugin as blocked, open
+   System Settings > Privacy & Security and click "Allow Anyway".
+
+3. Rescan plug-ins in your DAW's settings, or restart it.

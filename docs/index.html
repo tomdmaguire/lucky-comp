@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lucky Comp</title>
+<meta name="description" content="Lucky Comp: a free compressor plugin for macOS that sounds great in a real mix and teaches you to hear compression while you use it. Clean, FET, Opto and VCA modes on the same dials, level matching, a Lab that shows attack and release on a real snare, and colour voiced from published measurements of the classic units.">
+<meta property="og:title" content="Lucky Comp">
+<meta property="og:description" content="Compression by ear, with a compressor good enough for your real mixes. Free for macOS, VST3 and AU.">
+<meta property="og:image" content="https://tomdmaguire.github.io/lucky-comp/assets/fet.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Semi+Condensed:wght@500;600&display=swap">
+<style>
+  /* The Lucky family look, matching the plugin: charcoal, pastel mode colours, Barlow throughout. */
+  :root {
+    color-scheme: dark;
+    --bg: #1b1c20;
+    --bar: #26272c;
+    --strip: #222328;
+    --line: #34363d;
+    --text: #e6e6e8;
+    --dim: #9a9ca5;
+    --gold: #d6b785;
+    --pink: #d685be;
+    --green: #85d68f;
+    --aqua: #85d6d6;
+    --blue: #85aad6;
+    --cream: #efe0bf;
+    --display: "Barlow Semi Condensed", "Arial Narrow", system-ui, sans-serif;
+    --body: "Barlow", system-ui, -apple-system, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--body); font-size: 17px; line-height: 1.6; }
+  a { color: var(--gold); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+  img { max-width: 100%; height: auto; display: block; }
+
+  .wrap { max-width: 1120px; margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+  .label { font-family: var(--display); font-weight: 500; text-transform: uppercase; letter-spacing: 0.12em; font-size: 13px; color: var(--dim); }
+
+  header.top { background: var(--bar); border-bottom: 1px solid #00000040; position: sticky; top: 0; z-index: 10; }
+  header.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 60px; }
+  .brand { display: flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text); }
+  .brand img { width: 30px; height: 30px; }
+  .brand span { font-family: var(--display); font-weight: 600; letter-spacing: 0.14em; font-size: 17px; }
+  nav { display: flex; gap: 22px; }
+  nav a { color: var(--dim); text-decoration: none; font-family: var(--display); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; font-size: 14px; }
+  nav a:hover { color: var(--text); }
+
+  .hero { padding-block: 72px 40px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 48px; align-items: center; }
+  .hero h1 { font-family: var(--display); font-weight: 600; font-size: clamp(40px, 6vw, 68px); line-height: 1.02; letter-spacing: 0.01em; margin: 12px 0 20px; text-wrap: balance; }
+  .hero p { color: var(--dim); max-width: 56ch; margin: 0 0 16px; }
+  .hero p strong { color: var(--text); font-weight: 500; }
+  .actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
+  .button { display: inline-flex; align-items: center; gap: 10px; padding: 13px 22px; border-radius: 6px; font-family: var(--display); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; font-size: 15px; text-decoration: none; }
+  .button.primary { background: var(--gold); color: #1b1c20; }
+  .button.primary:hover { background: #e2c79b; }
+  .button.secondary { color: var(--text); border: 1px solid var(--line); }
+  .button.secondary:hover { border-color: var(--dim); }
+  .hero .specs { margin-top: 20px; font-size: 14px; color: var(--dim); }
+
+  /* The plugin's segment "C", taking each mode's colour in turn, as the plugin's logo does. */
+  .glyph { justify-self: center; width: min(100%, 260px); display: grid; justify-items: center; gap: 14px; }
+  .glyph svg { width: 70%; overflow: visible; }
+  .glyph path { fill: none; stroke-width: 5.5; stroke-linecap: round; stroke: var(--mode, var(--gold)); transition: stroke 0.5s ease, filter 0.5s ease; }
+  .glyph .lit { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--mode, var(--gold)) 55%, transparent)); }
+  .glyph .off { opacity: 0.1; }
+  .glyph .mode { font-family: var(--display); font-weight: 600; letter-spacing: 0.16em; font-size: 15px; color: var(--mode, var(--gold)); transition: color 0.5s ease; }
+
+  .shot { margin: 8px 0 0; }
+  .shot img { border-radius: 12px; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45); }
+  .substeps { margin: 8px 0; padding-left: 20px; color: var(--dim); }
+  .substeps li { margin: 4px 0; }
+  figcaption { color: var(--dim); font-size: 15px; margin-top: 12px; }
+
+  section { padding-block: 64px; }
+  section + section { border-top: 1px solid var(--line); }
+  h2 { font-family: var(--display); font-weight: 600; font-size: clamp(30px, 4vw, 40px); letter-spacing: 0.02em; margin: 6px 0 28px; text-wrap: balance; }
+  .intro { color: var(--dim); max-width: 70ch; margin: -12px 0 32px; }
+
+  .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 30px 34px; }
+  .feature h3 { font-family: var(--display); font-weight: 600; font-size: 21px; letter-spacing: 0.03em; margin: 0 0 6px; display: flex; align-items: flex-start; gap: 10px; }
+  .feature h3::before { content: ""; width: 9px; height: 9px; border-radius: 50%; background: var(--dot, var(--gold)); box-shadow: 0 0 0 5px color-mix(in srgb, var(--dot, var(--gold)) 18%, transparent); flex: none; margin-top: calc((1lh - 9px) / 2); }
+  .feature p { margin: 0; color: var(--dim); }
+  .feature .think { font-family: var(--display); font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; font-size: 13px; color: var(--dot); margin: 0 0 6px 19px; }
+  .modes { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  kbd { font-family: var(--display); font-weight: 600; font-size: 0.82em; color: var(--text); border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 4px; padding: 0 6px; }
+
+  .steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 26px; counter-reset: step; max-width: 780px; }
+  .steps > li { counter-increment: step; display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 16px; }
+  .steps > li::before { content: counter(step); font-family: var(--display); font-weight: 600; font-size: 22px; color: var(--gold); width: 44px; height: 44px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; }
+  .steps h3 { font-family: var(--display); font-weight: 600; font-size: 20px; letter-spacing: 0.03em; margin: 6px 0 4px; }
+  .steps p { margin: 0 0 8px; color: var(--dim); }
+  code { font-family: var(--mono); font-size: 0.86em; color: var(--cream); background: var(--strip); padding: 2px 6px; border-radius: 4px; }
+  .command { position: relative; margin: 10px 0 6px; }
+  .command pre { margin: 0; background: #121316; border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; padding-right: 86px; overflow-x: auto; font-family: var(--mono); font-size: 14px; line-height: 1.7; color: var(--cream); }
+  .command button { position: absolute; top: 9px; right: 9px; background: var(--bar); color: var(--text); border: 1px solid var(--line); border-radius: 5px; padding: 5px 11px; font-family: var(--display); font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; font-size: 12px; cursor: pointer; }
+  .command button:hover { border-color: var(--dim); }
+
+  .manual { margin-top: 36px; max-width: 780px; color: var(--dim); border: 1px solid var(--line); border-radius: 8px; padding: 14px 18px; }
+  .manual summary { cursor: pointer; color: var(--text); font-family: var(--display); font-weight: 600; letter-spacing: 0.03em; font-size: 17px; }
+  .manual[open] summary { margin-bottom: 8px; }
+  .manual p { margin: 8px 0; }
+  .points { margin: 18px 0; padding-left: 20px; color: var(--dim); }
+  .points li { margin: 0 0 10px; }
+  .points strong, .copy p strong { color: var(--text); font-weight: 600; }
+  .copy p { color: var(--dim); margin: 0 0 14px; }
+  .copy .aside { font-size: 15px; }
+  .split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 40px; align-items: center; }
+  .notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 40px; color: var(--dim); }
+  .notes h3 { font-family: var(--display); font-weight: 600; font-size: 19px; letter-spacing: 0.03em; color: var(--text); margin: 0 0 4px; }
+  .notes p { margin: 0; }
+
+  footer { border-top: 1px solid var(--line); padding-block: 36px 48px; color: var(--dim); font-size: 14px; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; }
+  footer p { margin: 0; max-width: 70ch; }
+
+  @media (max-width: 980px) { .modes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: minmax(0, 1fr); padding-top: 48px; gap: 24px; }
+    .glyph { order: -1; width: 140px; justify-self: start; }
+    .features, .notes, .split, .modes { grid-template-columns: minmax(0, 1fr); }
+    nav { gap: 16px; }
+  }
+  @media (max-width: 520px) {
+    nav a.optional { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="assets/logo.svg" alt=""><span>LUCKY COMP</span></a>
+    <nav aria-label="Sections">
+      <a class="optional" href="#features">Features</a>
+      <a class="optional" href="#modes">Modes</a>
+      <a class="optional" href="#how">How to use</a>
+      <a href="#install">Install</a>
+      <a href="https://github.com/tomdmaguire/lucky-comp">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <span class="label">Free compressor plugin for macOS &middot; VST3 &amp; AU</span>
+        <h1>Compression by ear.</h1>
+        <p><strong>A great-sounding compressor for your real mixes that teaches you how compression works, and how the classics differ, while you use it.</strong></p>
+        <div class="actions">
+          <a class="button primary" href="https://github.com/tomdmaguire/lucky-comp/releases/latest/download/Lucky-Comp.pkg">Download for Mac</a>
+          <a class="button secondary" href="#install">How to install</a>
+        </div>
+        <p class="specs">Free and open source &middot; Apple Silicon &amp; Intel &middot; macOS 13 or newer</p>
+      </div>
+
+      <div class="glyph" aria-hidden="true">
+        <svg viewBox="12 8 40 50">
+          <path class="lit" d="M22 14 H42"/><path class="lit" d="M19 17 V30"/><path class="lit" d="M19 35 V48"/><path class="lit" d="M22 51 H42"/>
+          <path class="off" d="M45 17 V30"/><path class="off" d="M22 32.5 H42"/><path class="off" d="M45 35 V48"/>
+        </svg>
+        <span class="mode">CLEAN</span>
+      </div>
+    </div>
+
+    <figure class="shot">
+      <img src="assets/fet.png" width="1800" height="1200" alt="Lucky Comp in FET mode on a drum loop. A one-line tip at the top describes the mode. The live view shows the input faint and the compressed signal solid, with the gain reduction as a white line from the top. The Lab on the right runs a test snare through the same settings. Six knobs: Input, Ratio, Attack, Release, Colour and Mix.">
+      <figcaption>FET mode on a drum loop. The white line is the compression; the Lab on the right shows what the same settings do to a single snare hit.</figcaption>
+    </figure>
+  </div>
+
+  <section id="features">
+    <div class="wrap">
+      <span class="label">What it does</span>
+      <h2>A compressor that shows its working.</h2>
+      <div class="features">
+        <div class="feature" style="--dot: var(--gold)">
+          <h3>Hear compression, not loudness</h3>
+          <p>Louder always sounds better, so Level Match turns the compressed sound to the same loudness as your track before you hear it. Press <kbd>C</kbd> to compare with uncompressed, fairly. It's predicted from the last few seconds of your audio, so even a knob mid-drag is matched within a few tens of milliseconds.</p>
+        </div>
+        <div class="feature" style="--dot: var(--pink)">
+          <h3>Ears first</h3>
+          <p>You see the compression as a curve, but the gain-reduction number stays hidden until you ask for it, so you learn to hear 3&nbsp;dB rather than read it. A one-line tip under the modes says what each one is good for.</p>
+        </div>
+        <div class="feature" style="--dot: var(--green)">
+          <h3>The Lab</h3>
+          <p>A real snare, run through your settings and drawn cycle by cycle: watch a fast attack flatten the crack and a slow release leave the room squashed. Press <kbd>S</kbd> to hear it, compressed exactly as shown, without touching your track.</p>
+        </div>
+        <div class="feature" style="--dot: var(--blue)">
+          <h3>The classics, side by side</h3>
+          <p>Clean, FET, Opto and VCA share one set of dials marked in real milliseconds, so you can see where each classic sits: an 1176-style FET can't attack slower than 0.8&nbsp;ms, an LA-2A-style Opto is always 10&nbsp;ms. Switch modes and each remembers its own settings.</p>
+        </div>
+        <div class="feature" style="--dot: var(--aqua)">
+          <h3>Colour you can turn up</h3>
+          <p>Each mode adds the tone of its classic, voiced from published measurements of real units. Just past Off it's like the hardware, which is subtle; turn it towards 10&times; to hear the character clearly, then back it off. The Lab shows the harmonics it adds as you turn it.</p>
+        </div>
+        <div class="feature" style="--dot: var(--cream)">
+          <h3>Parallel built in</h3>
+          <p>Mix crossfades from dry to compressed, and both sides arrive equally loud, so the whole knob is useful. Switch to Blend for New York-style compression: your dry track stays at 0&nbsp;dB and the compressed one is added underneath.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="modes">
+    <div class="wrap">
+      <span class="label">Modes</span>
+      <h2>Four characters, one set of dials.</h2>
+      <p class="intro">Each mode follows the published behaviour of the compressor it's named after: its attack and release range, its ratios, the way it lets go, and the controls it gives you. They aren't circuit clones; they're the characters, there to learn from and to mix with.</p>
+      <div class="features modes">
+        <div class="feature" style="--dot: var(--gold)">
+          <h3>Clean</h3>
+          <p class="think">Transparent</p>
+          <p>A modern, uncoloured compressor with every time in milliseconds: attack from 10&nbsp;&micro;s to 100&nbsp;ms, release from 5&nbsp;ms to 5&nbsp;s, ratio from 1:1 to 20:1. The place to start learning.</p>
+        </div>
+        <div class="feature" style="--dot: var(--pink)">
+          <h3>FET</h3>
+          <p class="think">Think 1176</p>
+          <p>The fastest classic. Attack from 20&nbsp;&micro;s to 0.8&nbsp;ms and release from 50&nbsp;ms to 1.1&nbsp;s, on dials that count up to go faster, ratios of 4, 8, 12 and 20. Grabs every peak.</p>
+        </div>
+        <div class="feature" style="--dot: var(--green)">
+          <h3>Opto</h3>
+          <p class="think">Think LA-2A</p>
+          <p>Slow and smooth. One main knob, Peak Reduction, at a gentle 3:1 and a fixed 10&nbsp;ms attack. The release follows the music: the harder you push it, the longer it holds on.</p>
+        </div>
+        <div class="feature" style="--dot: var(--blue)">
+          <h3>VCA</h3>
+          <p class="think">Think SSL bus compressor</p>
+          <p>Tight and punchy, for glue. Attack 0.1 to 30&nbsp;ms, release 0.1 to 1.2&nbsp;s or Auto, ratios of 2, 4 and 10, each knob clicking between the hardware's positions.</p>
+        </div>
+      </div>
+      <div class="split" style="margin-top: 48px">
+        <div class="copy">
+          <p><strong>Colour from the real units.</strong> FET, Opto and VCA each add the tone of their classic: the harmonics it adds, how they grow with level and compression, and any roll-off at the ends of the spectrum. It's voiced from the original manuals, academic measurements of real 1176s and LA-2As, the VCA chip's datasheet, and our own measurements of a hardware FET compressor. None of it comes from measuring other plugins.</p>
+          <p class="aside">Every figure and its source is listed in <a href="https://github.com/tomdmaguire/lucky-comp/blob/main/docs/colour-sources.md">colour-sources.md</a>.</p>
+        </div>
+        <figure class="shot">
+          <img src="assets/opto-colour.png" width="1800" height="1200" loading="lazy" alt="Lucky Comp in Opto mode with Colour at 5 times. A panel in the Lab reads Harmonics added: 2nd (warm) at minus 33 dB and 3rd (edgy) at minus 28 dB below the hit.">
+          <figcaption>Turning Colour shows the harmonics it adds to the test snare: here FET at 5&times;, mostly warm second harmonic.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <span class="label">How to use</span>
+      <h2>Listen first, then check.</h2>
+      <div class="split">
+        <ol class="steps">
+          <li>
+            <div>
+              <h3>Put it on a track or bus</h3>
+              <p>Drums, vocals, bass, a mix bus. Start in Clean, or pick the classic you'd reach for.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Pull the threshold down until you hear it</h3>
+              <p>Set attack and release and listen to how the hits change. The white line shows how hard it's working.</p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <h3>Compare at the same loudness</h3>
+              <p>Press <kbd>C</kbd> to flip between uncompressed and compressed. Guess how many dB it's taking off, then click <strong>GR</strong> to check.</p>
+            </div>
+          </li>
+        </ol>
+        <figure class="shot">
+          <img src="assets/ask.png" width="1800" height="1200" loading="lazy" alt="Lucky Comp asking 'Show the gain-reduction number?' in a panel attached to the GR button, recommending keeping it hidden, with Show GR and Keep it hidden buttons and a Don't ask again box.">
+          <figcaption>The number is one click away, but Lucky Comp asks first: try guessing by ear.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="wrap">
+      <span class="label">Install</span>
+      <h2>Four steps to your first compression.</h2>
+      <ol class="steps">
+        <li>
+          <div>
+            <h3>Download the installer</h3>
+            <p><a href="https://github.com/tomdmaguire/lucky-comp/releases/latest/download/Lucky-Comp.pkg">Download Lucky-Comp.pkg</a> and double-click it.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Give the installer permission to run</h3>
+            <p>macOS blocks the installer the first time with <em>&ldquo;Lucky-Comp.pkg&rdquo; Not Opened</em>, because free apps like Lucky Comp aren't signed with a paid Apple certificate. To allow it:</p>
+            <ol class="substeps">
+              <li>Click <strong>Done</strong> (not Move to Trash).</li>
+              <li>Open <strong>System Settings &rarr; Privacy &amp; Security</strong> and scroll down to Security.</li>
+              <li>Click <strong>Open Anyway</strong>, enter your password, then click <strong>Open</strong>.</li>
+            </ol>
+            <p>You only need to do this once.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Run the installer</h3>
+            <p>Click through to the end. It installs the VST3 and the Audio Unit for every user on your Mac; you can leave either out.</p>
+          </div>
+        </li>
+        <li>
+          <div>
+            <h3>Open it in your DAW</h3>
+            <p>Add Lucky Comp to a track (rescan plug-ins first if it doesn't appear).</p>
+          </div>
+        </li>
+      </ol>
+
+      <details class="manual">
+        <summary>Prefer to install by hand?</summary>
+        <p>Download the zip from the <a href="https://github.com/tomdmaguire/lucky-comp/releases/latest">releases page</a>, copy <code>Lucky Comp.vst3</code> into <code>~/Library/Audio/Plug-Ins/VST3</code> and <code>Lucky Comp.component</code> into <code>~/Library/Audio/Plug-Ins/Components</code>. Then unblock them in Terminal:</p>
+        <div class="command">
+          <pre id="unblock">xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/"Lucky Comp.vst3" ~/Library/Audio/Plug-Ins/Components/"Lucky Comp.component"</pre>
+          <button type="button" data-copy="unblock">Copy</button>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <section aria-label="Good to know">
+    <div class="wrap">
+      <span class="label">Good to know</span>
+      <h2>Notes</h2>
+      <div class="notes">
+        <div>
+          <h3>Light on CPU</h3>
+          <p>About 0.1 to 0.6% of one core per instance at 48&nbsp;kHz on an Apple Silicon Mac, depending on the mode, at any buffer size down to 32 samples. No latency.</p>
+        </div>
+        <div>
+          <h3>Formats</h3>
+          <p>VST3 and Audio Unit, built for Apple Silicon and Intel Macs running macOS 13 or newer. Mono or stereo.</p>
+        </div>
+        <div>
+          <h3>Keys</h3>
+          <p><kbd>C</kbd> compares with uncompressed, <kbd>S</kbd> plays the test snare. The space bar stays with your DAW.</p>
+        </div>
+        <div>
+          <h3>Open source</h3>
+          <p>The code is on <a href="https://github.com/tomdmaguire/lucky-comp">GitHub</a> under the AGPLv3. Bug reports and ideas are welcome as issues. Lucky Comp is a sibling of <a href="https://tomdmaguire.github.io/lucky-seven/">Lucky Seven</a>, a free convolution reverb, and <a href="https://tomdmaguire.github.io/lucky-reference/">Lucky Reference</a>, a free referencing plugin.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Lucky Comp is free and open source under the AGPLv3. Built with JUCE; interface set in Barlow (SIL Open Font License). The test snare is "kensnare1" by spacemanfan on freesound (CC0). 1176, LA-2A and SSL are trademarks of their owners, named only to describe the style each mode follows; Lucky Comp isn't affiliated with or endorsed by them.</p>
+    <p><a href="https://github.com/tomdmaguire/lucky-comp">Source on GitHub</a></p>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll("[data-copy]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const source = document.getElementById(button.dataset.copy);
+      try {
+        await navigator.clipboard.writeText(source.textContent);
+        button.textContent = "Copied";
+      } catch {
+        const range = document.createRange();
+        range.selectNodeContents(source);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        button.textContent = "Selected";
+      }
+      setTimeout(() => { button.textContent = "Copy"; }, 2000);
+    });
+  });
+
+  // Step the logo through the four modes' colours, as the plugin's logo follows the selected mode.
+  const glyph = document.querySelector(".glyph");
+  const modes = [["CLEAN", "--gold"], ["FET", "--pink"], ["OPTO", "--green"], ["VCA", "--blue"]];
+  if (glyph && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    let index = 0;
+    setInterval(() => {
+      index = (index + 1) % modes.length;
+      glyph.style.setProperty("--mode", `var(${modes[index][1]})`);
+      glyph.querySelector(".mode").textContent = modes[index][0];
+    }, 2400);
+  }
+</script>
+</body>
+</html>

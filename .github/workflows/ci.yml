@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Check out Lucky Labs
+        uses: actions/checkout@v4.2.2
+        with:
+          repository: tomdmaguire/lucky-labs
+          path: lucky-labs
+
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLUCKY_LABS_DIR="$GITHUB_WORKSPACE/lucky-labs"
+
+      - name: Build plugins and tests
+        run: cmake --build build --target LuckyComp_VST3 LuckyComp_AU LuckyCompTests LuckyCompProcessorTests
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure

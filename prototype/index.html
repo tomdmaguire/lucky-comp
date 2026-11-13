@@ -1,0 +1,650 @@
+<title>Lucky Comp Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: page intro, then a fixed-size plugin window (top bar, live view + one hit, optional tips, knob strip with bypass/match at bottom right), then notes */
+:root {
+  --bg: #141518;
+  --win: #1b1c20;
+  --bar: #26272c;
+  --strip: #222328;
+  --raised: #2e3036;
+  --outline: #34363d;
+  --text: #e6e6e8;
+  --dim: #83858e;
+  --mode: #d6b785;
+  --font: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 15px; line-height: 1.5; }
+.page { max-width: 1000px; margin: 0 auto; padding-block: 32px 64px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 28px; }
+.intro { display: grid; gap: 10px; max-width: 68ch; }
+.intro h1 { margin: 0; font-weight: 600; font-size: 26px; letter-spacing: 0.08em; text-transform: uppercase; text-wrap: balance; }
+.intro h1 small { font-size: 12px; color: var(--dim); letter-spacing: 0.14em; margin-left: 10px; vertical-align: middle; font-weight: 500; }
+.intro p { margin: 0; color: var(--dim); }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 6px; }
+.btn { font: 500 13px var(--font); letter-spacing: 0.1em; text-transform: uppercase; color: var(--win); background: var(--mode); border: 1px solid var(--mode); border-radius: 999px; padding: 8px 18px; cursor: pointer; }
+.btn:focus-visible, .knob:focus-visible, .tab:focus-visible, .switch:focus-visible, .delta:focus-visible, .dots:focus-visible { outline: 2px solid var(--mode); outline-offset: 2px; }
+.file { color: var(--dim); font-size: 13px; }
+.file input { display: none; }
+.file span { text-decoration: underline; cursor: pointer; }
+#srcName { color: var(--dim); font-size: 13px; }
+
+.scroller { overflow-x: auto; border-radius: 10px; }
+.plugin { position: relative; width: 960px; background: var(--win); border: 1px solid var(--outline); border-radius: 10px; overflow: hidden; user-select: none; -webkit-user-select: none; }
+.topbar { display: flex; align-items: stretch; height: 52px; background: var(--bar); }
+.brand { display: flex; align-items: center; gap: 12px; padding: 0 22px; font-weight: 600; letter-spacing: 0.14em; border-right: 1px solid var(--win); width: 210px; }
+.logo { width: 14px; height: 20px; border: 2px solid var(--mode); border-radius: 3px; border-left-color: transparent; }
+.spacer { flex: 1; }
+.tabs { display: flex; border-left: 1px solid var(--win); }
+.tab { width: 112px; font: 500 13px var(--font); letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); background: none; border: 0; border-bottom: 2px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.tab:hover { color: var(--text); }
+.tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--mode); }
+.tab i { width: 7px; height: 7px; border-radius: 50%; }
+.dots { width: 60px; border: 0; border-left: 1px solid var(--win); background: none; color: var(--dim); font-size: 20px; letter-spacing: 2px; cursor: pointer; }
+.dots:hover { color: var(--text); }
+.menu { position: absolute; right: 8px; top: 50px; z-index: 5; background: var(--raised); border: 1px solid var(--outline); border-radius: 8px; padding: 6px; min-width: 200px; display: grid; }
+.menu button { font: 500 13px var(--font); text-align: left; background: none; border: 0; color: var(--text); padding: 8px 10px; border-radius: 5px; cursor: pointer; display: flex; justify-content: space-between; gap: 16px; }
+.menu button:hover:not(:disabled) { background: rgba(230,230,232,0.06); }
+.menu button:disabled { color: var(--dim); cursor: default; }
+
+.views { display: grid; grid-template-columns: 1.55fr 1fr; gap: 1px; background: var(--strip); }
+.view { background: var(--win); padding: 14px 18px 14px; display: grid; gap: 8px; align-content: start; }
+.view header { display: flex; justify-content: space-between; align-items: center; gap: 12px; height: 24px; font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+.view header .right { display: flex; gap: 12px; align-items: center; font-variant-numeric: tabular-nums; }
+#gr { color: var(--text); }
+.delta { font: 600 13px var(--font); width: 30px; height: 24px; border-radius: 999px; border: 1px solid var(--outline); background: none; color: var(--dim); cursor: pointer; }
+.delta[aria-pressed="true"] { border-color: var(--mode); color: var(--mode); }
+canvas { display: block; width: 100%; }
+#live, #hit { height: 230px; }
+
+.tips { display: grid; gap: 4px; padding: 12px 22px; border-top: 1px solid var(--strip); font-size: 14px; }
+.tips p { margin: 0; }
+#modeNote { color: var(--dim); }
+
+.strip { display: grid; grid-template-columns: repeat(5, 1fr) 210px; align-items: center; background: var(--strip); padding: 16px 8px 18px; border-top: 1px solid var(--outline); }
+.cell { display: grid; justify-items: center; align-content: start; gap: 4px; }
+.cell .label { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); white-space: nowrap; }
+.knob { width: 96px; height: 96px; cursor: ns-resize; touch-action: none; border-radius: 50%; }
+.knob[aria-disabled="true"] { cursor: default; }
+.sub { font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); min-height: 16px; font-variant-numeric: tabular-nums; }
+.side { display: grid; gap: 14px; padding: 0 18px; border-left: 1px solid var(--outline); align-self: stretch; align-content: center; }
+.switch { display: flex; align-items: center; gap: 12px; background: none; border: 0; padding: 0; cursor: pointer; font: 500 13px var(--font); letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); }
+.switch .track { width: 40px; height: 22px; border-radius: 999px; background: var(--raised); position: relative; transition: background 0.15s; }
+.switch .track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: var(--dim); transition: transform 0.15s, background 0.15s; }
+.switch[aria-pressed="true"] { color: var(--text); }
+.switch[aria-pressed="true"] .track { background: var(--mode); }
+.switch[aria-pressed="true"] .track::after { transform: translateX(18px); background: var(--text); }
+.hint { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); display: flex; gap: 8px; align-items: center; }
+kbd { font: 500 11px var(--font); border: 1px solid var(--outline); border-radius: 4px; padding: 1px 6px; color: var(--dim); }
+
+.notes { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; }
+.notes section { min-width: 0; }
+.notes h2 { font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); font-weight: 500; margin: 0 0 10px; }
+.notes ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; }
+.notes li::marker { color: var(--mode); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<main class="page">
+  <div class="intro">
+    <h1>Lucky Comp <small>Prototype 2</small></h1>
+    <p>A rough working model of the compressor, running in your browser. The sound is a sketch; this is for trying the layout and the graphs.</p>
+    <div class="controls">
+      <button class="btn" id="play" type="button">Play</button>
+      <label class="file" for="fileIn"><input id="fileIn" type="file" accept="audio/*"><span>Use your own audio file</span></label>
+      <span id="srcName">Generated drum loop</span>
+    </div>
+  </div>
+
+  <div class="scroller">
+    <div class="plugin" id="plugin">
+      <div class="topbar">
+        <div class="brand"><span class="logo"></span>LUCKY COMP</div>
+        <div class="spacer"></div>
+        <div class="tabs" role="tablist" aria-label="Mode">
+          <button class="tab" role="tab" data-mode="clean" type="button"><i></i>Clean</button>
+          <button class="tab" role="tab" data-mode="fet" type="button"><i></i>FET</button>
+          <button class="tab" role="tab" data-mode="opto" type="button"><i></i>Opto</button>
+          <button class="tab" role="tab" data-mode="vca" type="button"><i></i>VCA</button>
+        </div>
+        <button class="dots" id="dots" type="button" aria-label="More options" aria-expanded="false">•••</button>
+      </div>
+      <div class="menu" id="menu" hidden>
+        <button id="tipsItem" type="button">Show tips <span id="tipsTick">✓</span></button>
+        <button type="button" disabled>Window size <span>›</span></button>
+      </div>
+
+      <div class="views">
+        <section class="view">
+          <header>
+            <span>Live</span>
+            <span class="right"><span id="gr">GR 0.0 dB</span><button class="delta" id="delta" type="button" aria-pressed="false" title="Delta: hear only what the compressor takes away">Δ</button></span>
+          </header>
+          <canvas id="live"></canvas>
+        </section>
+        <section class="view">
+          <header><span>One hit</span><span id="hitSrc">from the loop</span></header>
+          <canvas id="hit"></canvas>
+        </section>
+      </div>
+
+      <div class="tips" id="tips">
+        <p id="modeNote"></p>
+        <p id="hearNote"></p>
+      </div>
+
+      <div class="strip" id="strip">
+        <div class="side">
+          <button class="switch" id="bypass" type="button" aria-pressed="false"><span class="track"></span>Bypass</button>
+          <button class="switch" id="match" type="button" aria-pressed="true"><span class="track"></span>Level match</button>
+          <div class="hint"><kbd>Space</kbd>bypass</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes">
+    <section>
+      <h2>What changed</h2>
+      <ul>
+        <li>Raw / Compressed is now a Bypass switch at the bottom right, next to Level match, like Lucky Reference. Space still flips it.</li>
+        <li>Delta is the small Δ on the live view.</li>
+        <li>Meters are always on and the legend is gone: gain reduction is the white line and the GR number.</li>
+        <li>One Hit shows a fixed example hit (a transient, then a tail) as a waveform, run through the current settings.</li>
+        <li>The mode descriptions are tips you can turn off in the ••• menu. That would be a plugin-wide setting.</li>
+        <li>In Clean, the classic ranges sit on the Attack and Release knobs themselves, in each mode's colour. Hover them for the values.</li>
+        <li>Mix is gone.</li>
+      </ul>
+    </section>
+    <section>
+      <h2>Still open</h2>
+      <ul>
+        <li>Does the waveform version of One Hit work for you, or is the live view enough?</li>
+        <li>Should One Hit keep grabbing new hits while playing, or hold one until you ask for another?</li>
+        <li>The tip copy needs another pass.</li>
+        <li>Level match averages over 1.5 s. Does the settling bother you?</li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<script>
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
+const C = { text: '#e6e6e8', dim: '#83858e', outline: '#34363d', grid: '#26282e' };
+const FONT = 'Barlow, Helvetica Neue, Arial, sans-serif';
+const minus = '−';
+const fmtMs = ms => ms < 1 ? Math.round(ms * 1000) + ' µs' : ms < 10 ? ms.toFixed(1) + ' ms' : ms < 1000 ? Math.round(ms) + ' ms' : (ms / 1000).toFixed(1) + ' s';
+const fmtDb = v => (v > 0.05 ? '+' : v < -0.05 ? minus : '') + Math.abs(v).toFixed(Math.abs(v) < 10 ? 1 : 0) + ' dB';
+const fetAttack = d => 0.8 * Math.pow(0.02 / 0.8, (d - 1) / 6);
+const fetRelease = d => 1100 * Math.pow(50 / 1100, (d - 1) / 6);
+
+const MODES = {
+  clean: { colour: '#d6b785', knee: 6, window: 0.4,
+    note: 'Clean. A transparent compressor with every time in milliseconds. The coloured marks on Attack and Release show where the classic compressors sit.',
+    p: {
+      amount: { label: 'Threshold', min: -60, max: 0, def: -24, fmt: v => fmtDb(v), thr: v => v },
+      ratio: { label: 'Ratio', min: 1, max: 20, def: 4, scale: 'log', fmt: v => (v < 10 ? v.toFixed(1) : Math.round(v)) + ':1' },
+      attack: { label: 'Attack', min: 0.01, max: 100, def: 10, scale: 'log', fmt: fmtMs, ms: v => v },
+      release: { label: 'Release', min: 5, max: 2000, def: 150, scale: 'log', fmt: fmtMs, ms: v => v } } },
+  fet: { colour: '#d685be', knee: 2, window: 0.4,
+    note: 'FET, think 1176. The fastest of the classics: attack runs from 20 µs to 0.8 ms. Its dials count up to go faster, so 7 is the quickest. The threshold is fixed; Input pushes the signal into it.',
+    p: {
+      amount: { label: 'Input', min: 0, max: 40, def: 20, fmt: v => '+' + Math.round(v) + ' dB', thr: v => -v, sub: v => '= threshold ' + fmtDb(-v) },
+      ratio: { label: 'Ratio', steps: [4, 8, 12, 20], def: 4, fmt: v => v + ':1' },
+      attack: { label: 'Attack', min: 1, max: 7, def: 3, fmt: v => v.toFixed(1), ms: fetAttack, sub: v => '= ' + fmtMs(fetAttack(v)) },
+      release: { label: 'Release', min: 1, max: 7, def: 5, fmt: v => v.toFixed(1), ms: fetRelease, sub: v => '= ' + fmtMs(fetRelease(v)) } } },
+  opto: { colour: '#85d68f', knee: 14, window: 1.2,
+    note: 'Opto, think LA-2A. A lamp and a light sensor do the work, so it reacts slowly and smoothly. You can\'t set attack or release. It lets go of half the reduction quickly and the rest slowly, and the harder you push it the longer it holds on.',
+    p: {
+      amount: { label: 'Peak Reduction', min: 0, max: 100, def: 50, fmt: v => String(Math.round(v)), thr: v => -v * 0.4, sub: v => '= threshold ' + fmtDb(-v * 0.4) },
+      ratio: { label: 'Ratio', fixed: 3, fmt: () => '≈3:1', sub: () => 'Fixed, soft' },
+      attack: { label: 'Attack', fixed: 10, fmt: () => '10 ms', sub: () => 'Fixed' },
+      release: { label: 'Release', follow: true, sub: () => 'Follows the music' } } },
+  vca: { colour: '#85aad6', knee: 3, window: 0.4,
+    note: 'VCA, think SSL bus compressor. Precise and switched: attack and release are rotary switches on the hardware, so these knobs click between the real settings. Auto release changes with the music.',
+    p: {
+      amount: { label: 'Threshold', min: -40, max: 0, def: -18, fmt: v => fmtDb(v), thr: v => v },
+      ratio: { label: 'Ratio', steps: [2, 4, 10], def: 4, fmt: v => v + ':1' },
+      attack: { label: 'Attack', steps: [0.1, 0.3, 1, 3, 10, 30], def: 10, fmt: fmtMs, ms: v => v },
+      release: { label: 'Release', steps: [100, 300, 600, 1200, -1], def: 300, fmt: v => v < 0 ? 'Auto' : fmtMs(v), ms: v => v } } },
+};
+const COLOUR = { label: 'Colour', disabled: true, sub: () => 'Coming later' };
+const KEYS = ['amount', 'ratio', 'attack', 'release', 'colour'];
+const CLASSIC_MARKS = {
+  attack: [
+    { m: 'fet', range: [0.02, 0.8], tip: 'FET: 20 µs to 0.8 ms' },
+    { m: 'opto', dots: [10], tip: 'Opto: about 10 ms, fixed' },
+    { m: 'vca', dots: [0.1, 0.3, 1, 3, 10, 30], tip: 'VCA: 0.1, 0.3, 1, 3, 10, 30 ms' }],
+  release: [
+    { m: 'fet', range: [50, 1100], tip: 'FET: 50 ms to 1.1 s' },
+    { m: 'opto', dots: [60], range: [1000, 2000], tip: 'Opto: half in about 60 ms, the rest over 1 to 15 s' },
+    { m: 'vca', dots: [100, 300, 600, 1200], tip: 'VCA: 0.1, 0.3, 0.6, 1.2 s or Auto' }],
+};
+
+let mode = 'clean';
+const state = {};
+for (const m in MODES) { state[m] = {}; for (const k in MODES[m].p) state[m][k] = MODES[m].p[k].def; }
+const def = k => k === 'colour' ? COLOUR : MODES[mode].p[k];
+const editable = d => !d.fixed && !d.follow && !d.disabled;
+const toPos = (d, v) => d.steps ? d.steps.indexOf(v) / (d.steps.length - 1)
+  : d.scale === 'log' ? Math.log(v / d.min) / Math.log(d.max / d.min) : (v - d.min) / (d.max - d.min);
+const fromPos = (d, p) => {
+  p = clamp(p, 0, 1);
+  if (d.steps) return d.steps[Math.round(p * (d.steps.length - 1))];
+  return d.scale === 'log' ? d.min * Math.pow(d.max / d.min, p) : d.min + p * (d.max - d.min);
+};
+
+function engineParams() {
+  const M = MODES[mode], s = state[mode], P = M.p;
+  let release = 150, relMode = 'fixed';
+  if (P.release.follow) relMode = 'opto';
+  else if (P.release.steps && s.release < 0) relMode = 'auto';
+  else release = P.release.ms(s.release);
+  return { threshold: P.amount.thr(s.amount), ratio: P.ratio.fixed ?? s.ratio, knee: M.knee, attack: P.attack.fixed ?? P.attack.ms(s.attack), release, relMode };
+}
+
+class Comp {
+  constructor(sr) { this.sr = sr; this.f = 0; this.s = 0; this.mem = 0; this.n = 0; }
+  set(p) {
+    this.p = p;
+    const e = ms => Math.exp(-1 / (Math.max(ms, 0.001) / 1000 * this.sr));
+    this.a = e(p.attack); this.r = e(p.release); this.fast = e(p.relMode === 'opto' ? 60 : 100);
+    this.k = 1 - Math.exp(-1 / ((p.relMode === 'opto' ? 3 : 1.5) * this.sr));
+    this.updateSlow();
+  }
+  updateSlow() {
+    this.relNow = this.p.relMode === 'opto' ? Math.min(5, 0.4 + 0.3 * this.mem) : Math.min(1.5, 0.2 + 0.1 * this.mem);
+    this.aS = Math.exp(-1 / (this.relNow * this.sr));
+  }
+  target(db) {
+    const { threshold: T, ratio: R, knee: W } = this.p, o = db - T, s = 1 - 1 / R;
+    if (2 * o < -W) return 0;
+    if (2 * o > W) return o * s;
+    return s * (o + W / 2) ** 2 / (2 * W);
+  }
+  step(lin) {
+    const t = this.target(lin > 1e-6 ? 20 * Math.log10(lin) : -120);
+    if (this.p.relMode === 'fixed') { this.f = t + (t > this.f ? this.a : this.r) * (this.f - t); return this.f; }
+    if (++this.n >= 32) { this.n = 0; this.updateSlow(); }
+    this.f = t + (t > this.f ? this.a : this.fast) * (this.f - t);
+    this.s = t + (t > this.s ? this.a : this.aS) * (this.s - t);
+    const g = 0.5 * (this.f + this.s);
+    this.mem += (g - this.mem) * this.k;
+    return g;
+  }
+}
+
+const HIST = 2048, hIn = new Float32Array(HIST).fill(-120), hOut = new Float32Array(HIST).fill(-120), hGr = new Float32Array(HIST);
+let hW = 0, ctx = null, proc = null, src = null, buffer = null, playing = false;
+let ringWave = null, ringLvl = null, ringW = 0, ringN = 0;
+const eng = { comp: null, match: true, listen: 'comp', mk: 1, mkT: 1, msIn: 0, msOut: 0, wr: 0, wc: 1, wd: 0, n: 0, pi: 0, po: 0, gr: 0, grNow: 0 };
+
+function processAudio(e) {
+  const ib = e.inputBuffer, ob = e.outputBuffer, n = ib.length, sr = ctx.sampleRate, rl = ringWave.length;
+  const iL = ib.getChannelData(0), iR = ib.numberOfChannels > 1 ? ib.getChannelData(1) : iL;
+  const oL = ob.getChannelData(0), oR = ob.getChannelData(1);
+  const kMs = 1 - Math.exp(-1 / (1.5 * sr)), kMk = 1 - Math.exp(-1 / (0.25 * sr)), kW = 1 - Math.exp(-1 / (0.01 * sr));
+  const tR = eng.listen === 'raw' ? 1 : 0, tC = eng.listen === 'comp' ? 1 : 0, tD = eng.listen === 'delta' ? 1 : 0;
+  const c = eng.comp;
+  for (let i = 0; i < n; i++) {
+    const xl = iL[i], xr = iR[i], lvl = Math.max(Math.abs(xl), Math.abs(xr));
+    ringWave[ringW] = (xl + xr) * 0.5; ringLvl[ringW] = lvl; ringW = (ringW + 1) % rl; ringN++;
+    const gr = c.step(lvl), g = Math.pow(10, -gr / 20), cl = xl * g, cr = xr * g;
+    eng.msIn += ((xl * xl + xr * xr) * 0.5 - eng.msIn) * kMs;
+    eng.msOut += ((cl * cl + cr * cr) * 0.5 - eng.msOut) * kMs;
+    if ((i & 63) === 0 && eng.msIn > 1e-7 && eng.msOut > 1e-10) eng.mkT = clamp(Math.sqrt(eng.msIn / eng.msOut), 0.5, 20);
+    eng.mk += (eng.mkT - eng.mk) * kMk;
+    const mg = eng.match ? eng.mk : 1;
+    eng.wr += (tR - eng.wr) * kW; eng.wc += (tC - eng.wc) * kW; eng.wd += (tD - eng.wd) * kW;
+    oL[i] = eng.wr * xl + eng.wc * cl * mg + eng.wd * (xl - cl);
+    oR[i] = eng.wr * xr + eng.wc * cr * mg + eng.wd * (xr - cr);
+    eng.pi = Math.max(eng.pi, lvl); eng.po = Math.max(eng.po, Math.abs(cl), Math.abs(cr)); eng.gr = Math.max(eng.gr, gr);
+    if (++eng.n === 128) {
+      hIn[hW] = eng.pi > 1e-6 ? 20 * Math.log10(eng.pi) : -120;
+      hOut[hW] = eng.po > 1e-6 ? 20 * Math.log10(eng.po) : -120;
+      hGr[hW] = eng.gr; eng.grNow = gr;
+      hW = (hW + 1) % HIST; eng.n = 0; eng.pi = eng.po = eng.gr = 0;
+    }
+  }
+}
+
+const STEP = 60 / 96 / 4;
+function makeDrums(sr) {
+  const len = Math.round(STEP * 32 * sr), L = new Float32Array(len), R = new Float32Array(len);
+  let seed = 7;
+  const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647 * 2 - 1; };
+  const add = (t, voice, dur, gain, pan) => {
+    const s0 = Math.round(t * sr), n = Math.round(dur * sr);
+    for (let i = 0; i < n && s0 + i < len; i++) { const v = voice(i / sr) * gain; L[s0 + i] += v * (1 - pan); R[s0 + i] += v * (1 + pan); }
+  };
+  const kick = () => { let ph = 0; return t => { ph += 2 * Math.PI * (48 + 120 * Math.exp(-t * 28)) / sr; return Math.sin(ph) * Math.exp(-t * 7) + (t < 0.004 ? rnd() * 0.6 * (1 - t / 0.004) : 0); }; };
+  const snare = () => { let ph = 0, lp = 0; return t => { ph += 2 * Math.PI * 190 / sr; const nz = rnd(); lp += (nz - lp) * 0.3; return 0.55 * Math.sin(ph) * Math.exp(-t * 25) + 0.9 * (nz - lp) * Math.exp(-t * 13); }; };
+  const hat = () => { let lp = 0; return t => { const nz = rnd(); lp += (nz - lp) * 0.6; return (nz - lp) * Math.exp(-t * 55); }; };
+  [0, 7, 10, 16, 26, 27].forEach(s => add(s * STEP, kick(), 0.6, 1, 0));
+  [4, 12, 20, 28].forEach(s => add(s * STEP, snare(), 0.45, 0.85, 0.05));
+  [[6, 0.22], [15, 0.18], [23, 0.2], [31, 0.28]].forEach(([s, g]) => add(s * STEP, snare(), 0.3, g, 0.05));
+  for (let s = 0; s < 32; s += 2) add(s * STEP, hat(), 0.12, s % 4 === 0 ? 0.26 : 0.16, -0.25);
+  const room = (x, out) => {
+    const delays = [1557, 1617, 1491, 1422].map(d => Math.round(d * sr / 44100)), bufs = delays.map(d => new Float32Array(d)), idx = delays.map(() => 0);
+    for (let i = 0; i < len * 2; i++) {
+      const xi = i < len ? x[i] : 0; let y = 0;
+      for (let k = 0; k < 4; k++) { const b = bufs[k], v = b[idx[k]]; y += v; b[idx[k]] = xi + v * 0.82; idx[k] = (idx[k] + 1) % b.length; }
+      out[i % len] += y * 0.06;
+    }
+  };
+  const mono = L.map((v, i) => (v + R[i]) * 0.5), wetL = new Float32Array(len), wetR = new Float32Array(len);
+  room(mono, wetL); room(mono.map(v => -v), wetR);
+  let pk = 0;
+  for (let i = 0; i < len; i++) { L[i] += wetL[i]; R[i] -= wetR[i] * 0.8; pk = Math.max(pk, Math.abs(L[i]), Math.abs(R[i])); }
+  const g = 0.89 / pk;
+  return { L: L.map(v => v * g), R: R.map(v => v * g), sr };
+}
+
+const PRE = 1.5, CAP = 1.25;
+let captured = null;
+function captureFromDrums(d) {
+  const pre = Math.round(PRE * d.sr), onset = Math.round(16 * STEP * d.sr), n = pre + Math.round(CAP * d.sr);
+  const wave = new Float32Array(n), lvl = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const j = onset - pre + i; wave[i] = (d.L[j] + d.R[j]) * 0.5; lvl[i] = Math.max(Math.abs(d.L[j]), Math.abs(d.R[j])); }
+  return { wave, lvl, pre, sr: d.sr, from: 'example hit' };
+}
+function captureFromRing() {
+  const sr = ctx.sampleRate, rl = ringWave.length, newest = ringW - 1 + rl * 2, wmax = Math.round(CAP * sr);
+  let best = 0, bestAge = wmax;
+  for (let age = wmax; age < wmax + 2 * sr; age++) { const v = ringLvl[(newest - age) % rl]; if (v > best) { best = v; bestAge = age; } }
+  if (best < 0.01) return;
+  const onsetAge = bestAge + Math.round(0.004 * sr), pre = Math.round(PRE * sr), n = pre + wmax, startAge = onsetAge + pre;
+  const wave = new Float32Array(n), lvl = new Float32Array(n);
+  for (let i = 0; i < n; i++) { const j = (newest - (startAge - i)) % rl; wave[i] = ringWave[j]; lvl[i] = ringLvl[j]; }
+  captured = { wave, lvl, pre, sr, from: 'from your audio' };
+  sim = simulate(); drawHit();
+}
+
+function ensureCtx() {
+  if (ctx) return;
+  ctx = new (window.AudioContext || window.webkitAudioContext)();
+  const sr = ctx.sampleRate;
+  ringWave = new Float32Array(sr * 6); ringLvl = new Float32Array(sr * 6);
+  proc = ctx.createScriptProcessor(1024, 2, 2);
+  proc.onaudioprocess = processAudio;
+  proc.connect(ctx.destination);
+  eng.comp = new Comp(sr); eng.comp.set(engineParams());
+  const d = sr === drums.sr ? drums : makeDrums(sr);
+  buffer = ctx.createBuffer(2, d.L.length, sr);
+  buffer.getChannelData(0).set(d.L); buffer.getChannelData(1).set(d.R);
+}
+function start() {
+  ensureCtx(); ctx.resume();
+  src = ctx.createBufferSource(); src.buffer = buffer; src.loop = true; src.connect(proc); src.start();
+  playing = true; ringN = 0; playBtn.textContent = 'Stop';
+}
+function stop() { if (src) { src.stop(); src.disconnect(); src = null; } playing = false; playBtn.textContent = 'Play'; }
+const playBtn = document.getElementById('play');
+playBtn.addEventListener('click', () => playing ? stop() : start());
+document.getElementById('fileIn').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  ensureCtx();
+  try {
+    buffer = await ctx.decodeAudioData(await f.arrayBuffer());
+    document.getElementById('srcName').textContent = f.name;
+    if (playing) stop();
+    start();
+  } catch { document.getElementById('srcName').textContent = 'That file could not be decoded. Try a WAV or MP3.'; }
+});
+
+const strip = document.getElementById('strip'), side = strip.querySelector('.side'), cells = {};
+for (const k of KEYS) {
+  const cell = document.createElement('div'); cell.className = 'cell';
+  cell.innerHTML = `<div class="label"></div><div class="knob" role="slider" tabindex="0"></div><div class="sub"></div>`;
+  strip.insertBefore(cell, side);
+  cells[k] = { label: cell.querySelector('.label'), knob: cell.querySelector('.knob'), sub: cell.querySelector('.sub') };
+  bindKnob(cells[k].knob, k);
+}
+
+const A0 = -140, A1 = 140, CX = 48, CY = 48;
+const polar = (r, a) => [CX + r * Math.sin(a * Math.PI / 180), CY - r * Math.cos(a * Math.PI / 180)];
+function arcPath(r, a0, a1) {
+  const [x0, y0] = polar(r, a0), [x1, y1] = polar(r, a1);
+  return `M${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${a1 - a0 > 180 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`;
+}
+function classicMarks(k) {
+  if (mode !== 'clean' || !CLASSIC_MARKS[k]) return '';
+  const d = MODES.clean.p[k], ang = ms => A0 + clamp(toPos(d, ms), 0, 1) * (A1 - A0), r = 45;
+  return CLASSIC_MARKS[k].map(row => {
+    const col = MODES[row.m].colour;
+    let s = `<g><title>${row.tip}</title>`;
+    if (row.range) s += `<path d="${arcPath(r, ang(row.range[0]), ang(row.range[1]))}" fill="none" stroke="${rgba(col, 0.85)}" stroke-width="3" stroke-linecap="round"/>`;
+    (row.dots || []).forEach(ms => { const [x, y] = polar(r, ang(ms)); s += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="2.2" fill="${col}"/>`; });
+    return s + '</g>';
+  }).join('');
+}
+function knobSvg(k, pos, colour, text, look) {
+  const a = A0 + pos * (A1 - A0), r = 38;
+  const col = look === 'off' ? rgba(C.dim, 0.5) : look === 'follow' ? rgba(colour, 0.6) : colour;
+  const [tx, ty] = polar(r, a);
+  return `<svg viewBox="0 0 96 96" width="96" height="96" aria-hidden="true">
+    <circle cx="${CX}" cy="${CY}" r="40" fill="${rgba(look === 'off' ? C.dim : colour, 0.07)}"/>
+    <path d="${arcPath(r, A0, A1)}" fill="none" stroke="${rgba(look === 'off' ? C.dim : colour, 0.25)}" stroke-width="1.5" stroke-linecap="round" ${look === 'follow' ? 'stroke-dasharray="2 4"' : ''}/>
+    ${look !== 'off' && pos > 0.002 ? `<path d="${arcPath(r, A0, a)}" fill="none" stroke="${col}" stroke-width="2.5" stroke-linecap="round"/>` : ''}
+    ${look !== 'off' ? `<circle cx="${tx.toFixed(2)}" cy="${ty.toFixed(2)}" r="3.5" fill="${col}"/>` : ''}
+    ${classicMarks(k)}
+    <text x="${CX}" y="${CY + 5}" text-anchor="middle" font-family="${FONT}" font-weight="500" font-size="14" letter-spacing="0.8" fill="${look === 'off' ? C.dim : C.text}">${text || '—'}</text>
+  </svg>`;
+}
+
+function relNow() { return playing && eng.comp ? eng.comp.relNow : sim.rel; }
+function renderKnob(k) {
+  const d = def(k), ref = cells[k], colour = MODES[mode].colour, v = state[mode][k];
+  ref.label.textContent = d.label;
+  let pos = 0, text = '', look = 'on', sub = '';
+  if (d.disabled) { look = 'off'; sub = d.sub(); }
+  else if (d.follow) { const r = relNow(); pos = Math.log(r * 1000 / 50) / Math.log(5000 / 50); text = fmtMs(r * 1000); look = 'follow'; sub = d.sub(); }
+  else if (d.fixed !== undefined) {
+    pos = k === 'attack' ? toPos(MODES.clean.p.attack, d.fixed) : toPos(MODES.clean.p.ratio, d.fixed);
+    text = d.fmt(); look = 'follow'; sub = d.sub();
+  } else {
+    pos = toPos(d, v); text = d.fmt(v); sub = d.sub ? d.sub(v) : '';
+    if (k === 'release' && v < 0) sub = '≈ ' + fmtMs(relNow() * 1000) + ' now';
+  }
+  ref.knob.innerHTML = knobSvg(k, clamp(pos, 0, 1), colour, text, look);
+  ref.knob.setAttribute('aria-label', d.label);
+  ref.knob.setAttribute('aria-valuetext', text || 'off');
+  ref.knob.setAttribute('aria-disabled', String(!editable(d)));
+  ref.sub.textContent = sub;
+}
+
+function bindKnob(el, k) {
+  let startY = 0, startPos = 0, drag = false;
+  const setPos = p => { state[mode][k] = fromPos(def(k), p); onChange(); };
+  const stepSize = d => d.steps ? 1 / (d.steps.length - 1) : 0.02;
+  el.addEventListener('pointerdown', e => {
+    const d = def(k); if (!editable(d)) return;
+    el.setPointerCapture(e.pointerId); drag = true; startY = e.clientY; startPos = toPos(d, state[mode][k]); e.preventDefault();
+  });
+  el.addEventListener('pointermove', e => { if (drag) setPos(startPos + (startY - e.clientY) / (e.shiftKey ? 800 : 200)); });
+  el.addEventListener('pointerup', () => { drag = false; });
+  el.addEventListener('pointercancel', () => { drag = false; });
+  el.addEventListener('dblclick', () => { const d = def(k); if (editable(d)) { state[mode][k] = d.def; onChange(); } });
+  el.addEventListener('wheel', e => {
+    const d = def(k); if (!editable(d)) return; e.preventDefault();
+    setPos(toPos(d, state[mode][k]) + (e.deltaY < 0 ? 1 : -1) * stepSize(d));
+  }, { passive: false });
+  el.addEventListener('keydown', e => {
+    const d = def(k); if (!editable(d)) return;
+    const dir = { ArrowUp: 1, ArrowRight: 1, ArrowDown: -1, ArrowLeft: -1 }[e.key];
+    if (dir) { e.preventDefault(); setPos(toPos(d, state[mode][k]) + dir * stepSize(d)); }
+  });
+}
+
+function setupCanvas(cv) {
+  const dpr = window.devicePixelRatio || 1, w = cv.clientWidth, h = cv.clientHeight;
+  if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
+  const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, w, h);
+  return [g, w, h];
+}
+const DB = 54;
+const level = (v, half) => { const a = Math.abs(v); return a > 1e-6 ? clamp((20 * Math.log10(a) + DB) / DB, 0, 1) * half : 0; };
+function thresholdLines(g, w, mid, half, thr) {
+  const ty = clamp((thr + DB) / DB, 0, 1) * half;
+  g.setLineDash([5, 4]); g.strokeStyle = rgba(C.text, 0.45); g.lineWidth = 1; g.beginPath();
+  g.moveTo(0, mid - ty); g.lineTo(w, mid - ty); g.moveTo(0, mid + ty); g.lineTo(w, mid + ty); g.stroke(); g.setLineDash([]);
+}
+const grY = (gr, h) => 3 + (h - 6) * 0.5 * clamp(gr / 24, 0, 1);
+
+const liveCv = document.getElementById('live');
+function drawLive() {
+  const [g, w, h] = setupCanvas(liveCv), col = MODES[mode].colour, mid = h / 2, half = h / 2 - 6;
+  const H = db => clamp((db + DB) / DB, 0, 1) * half;
+  g.fillStyle = C.grid; g.fillRect(0, mid, w, 1);
+  const sr = ctx ? ctx.sampleRate : 48000, nb = Math.min(HIST - 1, Math.round(4 * sr / 128)), per = nb / w;
+  const at = b => (hW - nb + b + HIST * 2) % HIST;
+  g.strokeStyle = C.text; g.lineWidth = 1.5;
+  const grPath = new Path2D();
+  for (let x = 0; x < w; x++) {
+    const b0 = Math.floor(x * per), b1 = Math.max(b0 + 1, Math.floor((x + 1) * per));
+    let pi = -120, po = -120, gr = 0;
+    for (let b = b0; b < b1; b++) { const i = at(b); pi = Math.max(pi, hIn[i]); po = Math.max(po, hOut[i]); gr = Math.max(gr, hGr[i]); }
+    const hi = H(pi), ho = H(po);
+    if (hi > 0) { g.fillStyle = rgba(col, 0.2); g.fillRect(x, mid - hi, 1, hi * 2); }
+    if (ho > 0) { g.fillStyle = rgba(col, 0.75); g.fillRect(x, mid - ho, 1, ho * 2); }
+    x ? grPath.lineTo(x, grY(gr, h)) : grPath.moveTo(x, grY(gr, h));
+  }
+  thresholdLines(g, w, mid, half, engineParams().threshold);
+  g.stroke(grPath);
+  if (!playing && hIn.every(v => v <= -119)) {
+    g.fillStyle = C.dim; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = `500 13px ${FONT}`;
+    g.fillText('Press Play to see your audio here', w / 2, mid - 24);
+  }
+}
+
+let sim = null;
+function simulate() {
+  const ep = engineParams(), cap = captured, c = new Comp(cap.sr);
+  c.set(ep);
+  const lead = Math.round(0.006 * cap.sr), show0 = cap.pre - lead, W = Math.round(MODES[mode].window * cap.sr);
+  const out = new Float32Array(W), gr = new Float32Array(W);
+  for (let i = 0; i < show0 + W; i++) {
+    const g = c.step(cap.lvl[i]);
+    if (i >= show0) { const j = i - show0; gr[j] = g; out[j] = cap.wave[i] * Math.pow(10, -g / 20); }
+  }
+  return { inp: cap.wave.subarray(show0, show0 + W), out, gr, ep, lead: lead / cap.sr, win: MODES[mode].window, rel: c.relNow };
+}
+
+const hitCv = document.getElementById('hit');
+function drawHit() {
+  const [g, w, h] = setupCanvas(hitCv), col = MODES[mode].colour, mid = h / 2, half = h / 2 - 6;
+  const { inp, out, gr, ep, lead, win } = sim, per = inp.length / w;
+  g.fillStyle = C.grid; g.fillRect(0, mid, w, 1);
+  const grPath = new Path2D();
+  for (let x = 0; x < w; x++) {
+    const i0 = Math.floor(x * per), i1 = Math.max(i0 + 1, Math.floor((x + 1) * per));
+    let imax = 0, imin = 0, omax = 0, omin = 0, gm = 0;
+    for (let i = i0; i < i1; i++) {
+      const a = inp[i], b = out[i];
+      if (a > imax) imax = a; if (a < imin) imin = a; if (b > omax) omax = b; if (b < omin) omin = b; if (gr[i] > gm) gm = gr[i];
+    }
+    const iu = level(imax, half), id = level(imin, half), ou = level(omax, half), od = level(omin, half);
+    g.fillStyle = rgba(col, 0.2); g.fillRect(x, mid - iu, 1, iu + id);
+    g.fillStyle = rgba(col, 0.75); g.fillRect(x, mid - ou, 1, ou + od);
+    x ? grPath.lineTo(x, grY(gm, h)) : grPath.moveTo(x, grY(gm, h));
+  }
+  thresholdLines(g, w, mid, half, ep.threshold);
+  g.strokeStyle = C.text; g.lineWidth = 1.5; g.stroke(grPath);
+  const X = t => (t / win) * w, ax = X(lead + ep.attack / 1000);
+  g.font = `500 10px ${FONT}`; g.textBaseline = 'bottom';
+  g.fillStyle = col; g.fillRect(ax - 0.75, h - 16, 1.5, 10);
+  g.textAlign = ax > w - 60 ? 'right' : 'left'; g.fillText('attack', ax + (ax > w - 60 ? -4 : 4), h - 5);
+  g.fillStyle = C.dim; g.textAlign = 'right'; g.fillText(fmtMs(win * 1000), w - 2, h - 5);
+}
+
+const grEl = document.getElementById('gr'), modeNote = document.getElementById('modeNote'), hearEl = document.getElementById('hearNote');
+function hearNote() {
+  const ep = engineParams(), a = ep.attack;
+  const at = a < 0.5 ? `Attack ${fmtMs(a)} grabs the front of every hit, so drums lose their snap.`
+    : a < 5 ? `Attack ${fmtMs(a)} catches most of the click, so hits sound tighter.`
+    : a < 25 ? `Attack ${fmtMs(a)} lets the click through, then turns the body down, so hits sound punchier.`
+    : `Attack ${fmtMs(a)} lets most of each hit through and mainly turns down what follows.`;
+  const r = ep.relMode === 'fixed' ? ep.release : relNow() * 1000;
+  const rt = ep.relMode === 'opto' ? `Release follows the music and is about ${fmtMs(r)} right now.`
+    : r < 80 ? `Release ${fmtMs(r)} lets go fast, so room and tails come up between hits.`
+    : r < 400 ? `Release ${fmtMs(r)} recovers before the next hit, which sounds natural.`
+    : `Release ${fmtMs(r)} is still holding when the next hit arrives, which sounds smoother and more glued.`;
+  return 'Listen for: ' + at + ' ' + rt;
+}
+
+const plugin = document.getElementById('plugin');
+function onChange() {
+  if (eng.comp) eng.comp.set(engineParams());
+  sim = simulate();
+  KEYS.forEach(renderKnob);
+  hearEl.textContent = hearNote();
+  drawHit();
+}
+function setMode(m) {
+  mode = m;
+  const col = MODES[m].colour;
+  plugin.style.setProperty('--mode', col);
+  document.documentElement.style.setProperty('--mode', col);
+  document.querySelectorAll('[data-mode]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.mode === m)));
+  modeNote.textContent = MODES[m].note;
+  onChange();
+}
+document.querySelectorAll('[data-mode]').forEach(b => {
+  b.querySelector('i').style.background = MODES[b.dataset.mode].colour;
+  b.addEventListener('click', () => setMode(b.dataset.mode));
+});
+
+const bypassBtn = document.getElementById('bypass'), deltaBtn = document.getElementById('delta'), matchBtn = document.getElementById('match');
+let bypass = false, delta = false;
+function updateListen() {
+  eng.listen = bypass ? 'raw' : delta ? 'delta' : 'comp';
+  bypassBtn.setAttribute('aria-pressed', String(bypass));
+  deltaBtn.setAttribute('aria-pressed', String(delta));
+}
+bypassBtn.addEventListener('click', () => { bypass = !bypass; updateListen(); });
+deltaBtn.addEventListener('click', () => { delta = !delta; if (delta) bypass = false; updateListen(); });
+matchBtn.addEventListener('click', () => { eng.match = !eng.match; matchBtn.setAttribute('aria-pressed', String(eng.match)); });
+document.addEventListener('keydown', e => {
+  if (e.code !== 'Space' || e.target.tagName === 'INPUT') return;
+  e.preventDefault(); bypass = !bypass; updateListen();
+});
+
+const dotsBtn = document.getElementById('dots'), menu = document.getElementById('menu'), tipsEl = document.getElementById('tips'), tipsTick = document.getElementById('tipsTick');
+let tips = true;
+try { tips = localStorage.getItem('luckyComp.tips') !== 'off'; } catch {}
+function applyTips() { tipsEl.hidden = !tips; tipsTick.textContent = tips ? '✓' : ''; }
+dotsBtn.addEventListener('click', e => { e.stopPropagation(); menu.hidden = !menu.hidden; dotsBtn.setAttribute('aria-expanded', String(!menu.hidden)); });
+document.addEventListener('click', e => { if (!menu.hidden && !menu.contains(e.target)) { menu.hidden = true; dotsBtn.setAttribute('aria-expanded', 'false'); } });
+document.getElementById('tipsItem').addEventListener('click', () => {
+  tips = !tips; applyTips();
+  try { localStorage.setItem('luckyComp.tips', tips ? 'on' : 'off'); } catch {}
+});
+window.addEventListener('resize', () => drawHit());
+
+let lastSlow = 0, lastCapture = 0, lastRel = null;
+const hitSrc = document.getElementById('hitSrc');
+function frame(now) {
+  drawLive();
+  if (now - lastSlow > 150) {
+    lastSlow = now;
+    grEl.textContent = 'GR ' + (playing && eng.grNow > 0.05 ? minus : '') + (playing ? eng.grNow : 0).toFixed(1) + ' dB';
+    hitSrc.textContent = captured.from;
+    if (engineParams().relMode !== 'fixed') {
+      const r = relNow();
+      if (lastRel === null || Math.abs(r - lastRel) > 0.01) { lastRel = r; renderKnob('release'); hearEl.textContent = hearNote(); }
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+const drums = makeDrums(48000);
+captured = captureFromDrums(drums);
+applyTips();
+updateListen();
+setMode('clean');
+document.fonts && document.fonts.ready.then(() => { drawHit(); KEYS.forEach(renderKnob); });
+requestAnimationFrame(frame);
+</script>

@@ -1,0 +1,9 @@
+build/
+.DS_Store
+*.xcodeproj/
+.cache/
+compile_commands.json
+
+# Local scratch measurements; only the measurement sets in measurements/ are committed.
+measurements/private/
+*.envelope.csv

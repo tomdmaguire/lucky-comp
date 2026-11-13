@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4.2.2
+
+      - name: Check out Lucky Labs
+        uses: actions/checkout@v4.2.2
+        with:
+          repository: tomdmaguire/lucky-labs
+          path: lucky-labs
+
+      - name: Configure
+        run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLUCKY_LABS_DIR="$GITHUB_WORKSPACE/lucky-labs"
+
+      - name: Build plugins and tests
+        run: cmake --build build --target LuckyComp_VST3 LuckyComp_AU LuckyCompTests LuckyCompProcessorTests
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Package
+        run: |
+          set -euo pipefail
+          artefacts="build/LuckyComp_artefacts/Release"
+          package="Lucky-Comp-${GITHUB_REF_NAME}-macOS"
+          mkdir -p "dist/$package"
+          cp -R "$artefacts/VST3/Lucky Comp.vst3" "dist/$package/"
+          cp -R "$artefacts/AU/Lucky Comp.component" "dist/$package/"
+          codesign --force --deep --sign - "dist/$package/Lucky Comp.vst3"
+          codesign --force --deep --sign - "dist/$package/Lucky Comp.component"
+          cp README.md CHANGELOG.md LICENSE "dist/$package/"
+          cp lucky-labs/Resources/Fonts/OFL.txt "dist/$package/Barlow-OFL.txt"
+          cp Resources/README.md "dist/$package/Test-snare-credit.md"
+          cp packaging/INSTALL.txt "dist/$package/INSTALL.txt"
+          (cd dist && ditto -c -k --keepParent "$package" "$package.zip")
+          packaging/build-pkg.sh "${GITHUB_REF_NAME#v}" "dist/$package/Lucky Comp.vst3" "dist/$package/Lucky Comp.component" "dist/Lucky-Comp.pkg"
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" "dist/Lucky-Comp.pkg" "dist/Lucky-Comp-${GITHUB_REF_NAME}-macOS.zip" \
+            --title "Lucky Comp $GITHUB_REF_NAME" \
+            --notes-file CHANGELOG.md
