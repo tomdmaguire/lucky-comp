@@ -111,6 +111,16 @@ int main (int argc, char** argv)
     const auto renderMs = secondsSince (start) * 1000.0 / simulations;
     std::cout << "Lab, one simulation (message thread, on each settings change): " << juce::String (simulateMs, 2) << " ms\n";
     std::cout << "Test snare, one render at 44.1 kHz (message thread, on S): " << juce::String (renderMs, 2) << " ms\n";
+
+    start = juce::Time::getMillisecondCounterHiRes();
+    for (int i = 0; i < simulations; ++i)
+    {
+        const auto settings = lucky::modes::resolve (lucky::Mode::fet, { -20.0f - static_cast<float> (i), 4.0f, 0.2f, 100.0f, false });
+        lucky::example_hit::simulate (settings, lucky::example_hit::windowSeconds, lucky::example_hit::sampleRate);
+        lucky::example_hit::renderHit (settings, 44100.0, true);
+    }
+    const auto alternatingMs = secondsSince (start) * 1000.0 / simulations;
+    std::cout << "Lab update then S in a 44.1 kHz session (message thread): " << juce::String (alternatingMs, 2) << " ms\n";
     processor->releaseResources();
     return 0;
 }

@@ -19,6 +19,9 @@ struct Sound
     double rate = 0.0;
 };
 
+/** The Lab draws at 48 kHz while S plays at the host's rate, so at least two rates stay resampled. */
+constexpr size_t maxCachedRates = 4;
+
 /** Reads a mono PCM WAV (16 or 24 bit) from memory; empty if the format isn't one of those. */
 Sound decodeWav (const char* data, size_t size)
 {
@@ -96,21 +99,26 @@ std::vector<float> resample (const std::vector<float>& in, double from, double t
 std::vector<float> makeHit (double rate)
 {
     static std::mutex mutex;
-    static Sound cached;
+    static const auto source = decodeWav (LuckyCompSamples::TestSnare_wav, static_cast<size_t> (LuckyCompSamples::TestSnare_wavSize));
+    static std::vector<Sound> cached;
     const std::scoped_lock lock (mutex);
-    if (std::abs (cached.rate - rate) > 1.0e-6 || cached.samples.empty())
-    {
-        const auto source = decodeWav (LuckyCompSamples::TestSnare_wav, static_cast<size_t> (LuckyCompSamples::TestSnare_wavSize));
-        cached = { resample (source.samples, source.rate, rate), rate };
 
-        auto peak = 0.0f;
-        for (const auto s : cached.samples)
-            peak = std::max (peak, std::abs (s));
-        if (peak > 0.0f)
-            for (auto& s : cached.samples)
-                s *= hitPeak / peak;
-    }
-    return cached.samples;
+    const auto found = std::find_if (cached.begin(), cached.end(), [rate] (const Sound& sound) { return std::abs (sound.rate - rate) < 1.0e-6; });
+    if (found != cached.end())
+        return found->samples;
+
+    Sound sound { resample (source.samples, source.rate, rate), rate };
+    auto peak = 0.0f;
+    for (const auto s : sound.samples)
+        peak = std::max (peak, std::abs (s));
+    if (peak > 0.0f)
+        for (auto& s : sound.samples)
+            s *= hitPeak / peak;
+
+    if (cached.size() >= maxCachedRates)
+        cached.erase (cached.begin());
+    cached.push_back (std::move (sound));
+    return cached.back().samples;
 }
 
 HitTrace simulate (const DetectorSettings& settings, double window, double rate, Blend blend, const ColourSettings& colourSettings)

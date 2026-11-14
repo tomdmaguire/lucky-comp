@@ -77,7 +77,8 @@ public:
     float getUncompressedTarget() const noexcept { return uncompressedTarget.load (std::memory_order_relaxed); }
 
     /** Message thread: plays a rendered test hit on top of the output, compressed or (while bypassed) raw. It
-        never touches the input, so it doesn't affect your audio's compression, meters or level match. */
+        never touches the input, so it doesn't affect your audio's compression, meters or level match. The hit is
+        written to the slot that isn't playing, so pressing again mid-hit never changes what is being heard. */
     void playTestHit (const example_hit::HitRender&);
 
     /** The recent input that level match predicts from. */
@@ -120,10 +121,11 @@ private:
     std::atomic<float> makeupTarget { 1.0f }, wetMakeupTarget { 1.0f }, uncompressedTarget { 1.0f };
     float wetMakeup = 1.0f, uncompressed = 1.0f;
     std::atomic<bool> makeupJump { false };
-    /** Two slots, so a new hit is written to the one not playing. */
+    /** Two slots, so a new hit is written to the one not playing. hitLock guards the slots' contents, requestedSlot
+        and playingSlot against playTestHit and prepare; the audio thread only try-locks it to pick up a request. */
     std::array<example_hit::HitRender, 2> hits;
-    std::atomic<int> hitSlot { 0 };
-    std::atomic<bool> hitRequested { false };
+    juce::SpinLock hitLock;
+    int requestedSlot = -1;
     int playingSlot = 0;
     size_t hitPosition = 0;
 

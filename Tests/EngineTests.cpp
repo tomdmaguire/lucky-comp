@@ -207,6 +207,36 @@ public:
                 expect (makeup.has_value() && std::isfinite (makeup->trim) && std::isfinite (makeup->wet));
             }
         }
+
+        beginTest ("Pressing S again plays the newest hit, and a pending hit doesn't survive prepare");
+        {
+            const auto steady = [] (float level)
+            {
+                const auto length = static_cast<size_t> (example_hit::hitSpacingSeconds * rate);
+                return example_hit::HitRender { std::vector<float> (length, level), std::vector<float> (length, level) };
+            };
+            CompressorEngine engine;
+            engine.prepare (rate);
+            juce::AudioBuffer<float> block (2, blockSize);
+            const auto firstSample = [&]
+            {
+                block.clear();
+                engine.process (block);
+                return block.getSample (0, 0);
+            };
+
+            engine.playTestHit (steady (0.1f));
+            expectWithinAbsoluteError (firstSample(), 0.1f, 1.0e-6f);
+            engine.playTestHit (steady (0.2f));
+            engine.playTestHit (steady (0.3f));
+            expectWithinAbsoluteError (firstSample(), 0.3f, 1.0e-6f);
+            engine.playTestHit (steady (0.4f));
+            expectWithinAbsoluteError (firstSample(), 0.4f, 1.0e-6f);
+
+            engine.playTestHit (steady (0.5f));
+            engine.prepare (rate);
+            expectEquals (firstSample(), 0.0f);
+        }
     }
 };
 

@@ -44,7 +44,8 @@ inline constexpr float hitCeiling = 0.89f;
 inline constexpr float hitPeak = 0.5f;
 
 /** A real snare (Resources/TestSnare.wav: an uncompressed DW 13" snare from freesound, CC0, with a small room added),
-    at the given rate and peaking at hitPeak. The crack makes attack audible and the room makes release audible. */
+    at the given rate and peaking at hitPeak. The crack makes attack audible and the room makes release audible.
+    Decoded once and kept for the last few rates asked for, so neither the Lab nor S resamples it again. */
 std::vector<float> makeHit (double rate = sampleRate);
 
 /** Runs the hit (after hitsBefore identical hits, so the detector is in a realistic state) through the settings. */

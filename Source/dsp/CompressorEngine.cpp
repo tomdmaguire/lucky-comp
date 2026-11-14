@@ -33,10 +33,14 @@ void CompressorEngine::prepare (double newSampleRate)
     colour.prepare (sampleRate);
     matcher.prepare (sampleRate);
     const auto hitLength = static_cast<size_t> (example_hit::hitSpacingSeconds * sampleRate);
-    for (auto& k : hits)
     {
-        k.raw.assign (hitLength, 0.0f);
-        k.compressed.assign (hitLength, 0.0f);
+        const juce::SpinLock::ScopedLockType lock (hitLock);
+        for (auto& k : hits)
+        {
+            k.raw.assign (hitLength, 0.0f);
+            k.compressed.assign (hitLength, 0.0f);
+        }
+        requestedSlot = -1;
     }
     hitPosition = hitLength;
     weightStep = blendStep = static_cast<float> (1.0 / (listenFadeSeconds * sampleRate));
@@ -75,13 +79,15 @@ void CompressorEngine::setColour (const ColourSettings& newColour) noexcept { co
 
 void CompressorEngine::playTestHit (const example_hit::HitRender& render)
 {
-    const auto slot = 1 - hitSlot.load (std::memory_order_acquire);
+    const juce::SpinLock::ScopedLockType lock (hitLock);
+    const auto slot = 1 - playingSlot;
     auto& target = hits[static_cast<size_t> (slot)];
     const auto length = std::min ({ target.raw.size(), render.raw.size(), render.compressed.size() });
     std::copy_n (render.raw.begin(), length, target.raw.begin());
     std::copy_n (render.compressed.begin(), length, target.compressed.begin());
-    hitSlot.store (slot, std::memory_order_release);
-    hitRequested.store (true, std::memory_order_release);
+    std::fill (target.raw.begin() + static_cast<std::ptrdiff_t> (length), target.raw.end(), 0.0f);
+    std::fill (target.compressed.begin() + static_cast<std::ptrdiff_t> (length), target.compressed.end(), 0.0f);
+    requestedSlot = slot;
 }
 
 CompressorEngine::MeterEntry CompressorEngine::getMeterEntry (int index) const noexcept
@@ -123,9 +129,9 @@ void CompressorEngine::process (juce::AudioBuffer<float>& buffer) noexcept
         wetMakeup = wetMakeupGoal;
         uncompressed = uncompressedGoal;
     }
-    if (hitRequested.exchange (false, std::memory_order_acquire))
+    if (const juce::SpinLock::ScopedTryLockType lock (hitLock); lock.isLocked() && requestedSlot >= 0)
     {
-        playingSlot = hitSlot.load (std::memory_order_acquire);
+        playingSlot = std::exchange (requestedSlot, -1);
         hitPosition = 0;
     }
     const auto& hit = hits[static_cast<size_t> (playingSlot)];
