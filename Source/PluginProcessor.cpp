@@ -12,6 +12,17 @@ const juce::Identifier wetMatchGainProperty { "wetMatchGainDb" };
 /** The uncompressed signal's gain (dB) while comparing, below 0 when peaks held the make-up down. */
 const juce::Identifier uncompressedMatchGainProperty { "uncompressedMatchGainDb" };
 
+/** A saved level-match gain in dB, or nothing if it's missing or not a finite number; limited to what the matcher can set. */
+std::optional<float> readMatchGainDb (const juce::var& saved)
+{
+    if (saved.isVoid())
+        return std::nullopt;
+    const auto db = static_cast<float> (saved);
+    if (! std::isfinite (db))
+        return std::nullopt;
+    return std::clamp (db, lucky::LevelMatcher::minGainDb, lucky::LevelMatcher::maxGainDb);
+}
+
 /** A log-scaled range, so a knob spends as much travel on 0.1-1 ms as on 10-100 ms. */
 juce::NormalisableRange<float> logRange (float start, float end)
 {
@@ -283,24 +294,24 @@ void LuckyCompProcessor::setStateInformation (const void* data, int sizeInBytes)
     for (int i = state.getNumChildren(); --i >= 0;)
         if (state.getChild (i).hasType (memoryType))
             state.removeChild (i, nullptr);
-    const auto savedMatch = state.getProperty (matchGainProperty);
-    const auto savedWetMatch = state.getProperty (wetMatchGainProperty);
-    const auto savedUncompressed = state.getProperty (uncompressedMatchGainProperty, 0.0);
+    const auto savedMatch = readMatchGainDb (state.getProperty (matchGainProperty));
+    const auto savedWetMatch = readMatchGainDb (state.getProperty (wetMatchGainProperty));
+    const auto savedUncompressed = readMatchGainDb (state.getProperty (uncompressedMatchGainProperty)).value_or (0.0f);
     state.removeProperty (matchGainProperty, nullptr);
     state.removeProperty (wetMatchGainProperty, nullptr);
     state.removeProperty (uncompressedMatchGainProperty, nullptr);
     parameters.replaceState (state);
 
-    if (savedMatch.isVoid() || savedWetMatch.isVoid())
+    if (! savedMatch || ! savedWetMatch)
         return;
     const juce::SpinLock::ScopedLockType lock (matchLock);
     matchedSettings = getDetectorSettings();
     matchedBlend = getBlend();
     matchedSound = 0;
     rememberedMatch = true;
-    engine.setWetMakeupTarget (juce::Decibels::decibelsToGain (static_cast<float> (savedWetMatch)), true);
-    engine.setMakeupTarget (juce::Decibels::decibelsToGain (static_cast<float> (savedMatch)), true);
-    engine.setUncompressedTarget (juce::Decibels::decibelsToGain (static_cast<float> (savedUncompressed)), true);
+    engine.setWetMakeupTarget (juce::Decibels::decibelsToGain (*savedWetMatch), true);
+    engine.setMakeupTarget (juce::Decibels::decibelsToGain (*savedMatch), true);
+    engine.setUncompressedTarget (juce::Decibels::decibelsToGain (savedUncompressed), true);
 }
 
 void LuckyCompProcessor::playTestHit()

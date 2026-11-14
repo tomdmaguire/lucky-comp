@@ -13,6 +13,12 @@ float toDb (float gain) noexcept
     return gain > 1.0e-6f ? 20.0f * std::log10 (gain) : -120.0f;
 }
 
+/** A NaN or infinite sample from upstream would stick in every filter and envelope; it is heard as silence instead. */
+float finiteOrSilent (float sample) noexcept
+{
+    return std::isfinite (sample) ? sample : 0.0f;
+}
+
 float approach (float value, float target, float step) noexcept
 {
     return value < target ? std::min (target, value + step) : std::max (target, value - step);
@@ -127,8 +133,8 @@ void CompressorEngine::process (juce::AudioBuffer<float>& buffer) noexcept
 
     for (int i = 0; i < numSamples; ++i)
     {
-        const auto inL = left[i];
-        const auto inR = right != nullptr ? right[i] : inL;
+        const auto inL = finiteOrSilent (left[i]);
+        const auto inR = right != nullptr ? finiteOrSilent (right[i]) : inL;
         matcher.record (inL, inR);
         const auto level = std::max (std::abs (inL), std::abs (inR));
 

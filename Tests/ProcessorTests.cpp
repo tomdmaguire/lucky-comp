@@ -332,6 +332,38 @@ public:
             expect (lucky::test::energy (out, 0, n) < lucky::test::energy (loop, 0, n) * 0.5);
             expect (p->getEngine().getMeterPosition() > 0);
         }
+
+        beginTest ("A damaged session can't set an extreme or broken level-match gain");
+        {
+            auto p = makeProcessor();
+            juce::MemoryBlock state;
+            p->getStateInformation (state);
+            const auto withGains = [&state] (const juce::var& gainDb)
+            {
+                auto tree = juce::ValueTree::fromXml (*juce::AudioProcessor::getXmlFromBinary (state.getData(), static_cast<int> (state.getSize())));
+                tree.setProperty ("matchGainDb", gainDb, nullptr);
+                tree.setProperty ("wetMatchGainDb", gainDb, nullptr);
+                tree.setProperty ("uncompressedMatchGainDb", gainDb, nullptr);
+                juce::MemoryBlock damaged;
+                juce::AudioProcessor::copyXmlToBinary (*tree.createXml(), damaged);
+                return damaged;
+            };
+
+            const auto loud = withGains (200.0);
+            auto q = makeProcessor();
+            q->setStateInformation (loud.getData(), static_cast<int> (loud.getSize()));
+            const auto maxGain = juce::Decibels::decibelsToGain (lucky::LevelMatcher::maxGainDb);
+            expect (q->getEngine().getMakeupTarget() <= maxGain * 1.001f);
+            expect (q->getEngine().getWetMakeupTarget() <= maxGain * 1.001f);
+            expect (q->getEngine().getUncompressedTarget() <= maxGain * 1.001f);
+
+            const auto broken = withGains (std::numeric_limits<double>::quiet_NaN());
+            auto r = makeProcessor();
+            r->setStateInformation (broken.getData(), static_cast<int> (broken.getSize()));
+            expect (std::isfinite (r->getEngine().getMakeupTarget()));
+            expect (std::isfinite (r->getEngine().getWetMakeupTarget()));
+            expect (std::isfinite (r->getEngine().getUncompressedTarget()));
+        }
     }
 };
 

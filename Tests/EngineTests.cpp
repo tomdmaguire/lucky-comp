@@ -182,6 +182,31 @@ public:
             expect (loudestIn > -3.0f);
             expect (engine.isHearingAudio());
         }
+
+        beginTest ("One NaN or infinite input sample is heard as silence and doesn't stick");
+        {
+            const auto fet = modes::resolve (Mode::fet, modes::defaults (Mode::fet));
+            for (const auto bad : { std::numeric_limits<float>::infinity(), std::numeric_limits<float>::quiet_NaN() })
+            {
+                CompressorEngine engine;
+                engine.setSettings (fet);
+                engine.setColour ({ Mode::fet, 1.0f });
+                engine.prepare (rate);
+                auto input = loop;
+                input.setSample (0, 1000, bad);
+                input.setSample (1, 1000, bad);
+                const auto out = run (engine, input);
+
+                auto finite = true;
+                for (int ch = 0; ch < 2; ++ch)
+                    for (int i = 0; i < total; ++i)
+                        finite = finite && std::isfinite (out.getSample (ch, i));
+                expect (finite);
+                expect (std::isfinite (engine.getReduction()));
+                const auto makeup = engine.getMatcher().predictMakeup (fet, Blend::mix (1.0f));
+                expect (makeup.has_value() && std::isfinite (makeup->trim) && std::isfinite (makeup->wet));
+            }
+        }
     }
 };
 

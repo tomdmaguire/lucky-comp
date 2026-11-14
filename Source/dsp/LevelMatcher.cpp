@@ -118,7 +118,7 @@ std::optional<float> LevelMatcher::predict (const DetectorSettings& settings, Bl
 std::optional<LevelMatcher::Makeup> LevelMatcher::predictMakeup (const DetectorSettings& settings, Blend blend) const
 {
     const auto sums = replay (settings);
-    if (! sums || sums->gainSquared <= 0.0)
+    if (! sums || ! std::isfinite (sums->energy) || ! std::isfinite (sums->gainSquared) || sums->gainSquared <= 0.0)
         return std::nullopt;
     const auto wet = limit (std::sqrt (sums->energy / sums->gainSquared));
     const auto ratio = sums->ratio ({ blend.dry, blend.wet * wet });
