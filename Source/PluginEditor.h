@@ -63,6 +63,8 @@ private:
     juce::Colour accent() const;
     void applyAccent();
     void setKnobValue (Control, float value);
+    /** The parameter a knob writes to now: the Mix knob writes Blend in Blend mode. */
+    juce::String parameterIdFor (Control) const;
     float releaseSeconds() const;
     void showMenu();
     void eyeClicked();
@@ -77,6 +79,8 @@ private:
     lucky::LiveView liveView;
     lucky::HitView hitView;
     std::array<lucky::Knob, numControls> knobs;
+    /** The parameter each knob's drag began a gesture on, so it ends the same one even if the mode changes mid-drag. */
+    std::array<juce::String, numControls> gestureIds;
     lucky::KeyHintButton compareHint { "C", "Compare with uncompressed" };
     lucky::ToggleNotice compareNotice { "Hearing it uncompressed", "C", "Back to compressed" };
     lucky::SmallSwitch matchSwitch { "LEVEL MATCH" };

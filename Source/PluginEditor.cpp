@@ -350,26 +350,27 @@ LuckyCompView::LuckyCompView (LuckyCompProcessor& processor)
     addAndMakeVisible (liveView);
     addAndMakeVisible (hitView);
 
-    const std::array<juce::String, numControls> ids { LuckyCompProcessor::thresholdId, LuckyCompProcessor::ratioId,
-                                                      LuckyCompProcessor::attackId, LuckyCompProcessor::releaseId, LuckyCompProcessor::colourId,
-                                                      LuckyCompProcessor::mixId };
     for (int c = 0; c < numControls; ++c)
     {
         auto& knob = knobs[static_cast<size_t> (c)];
         const auto control = static_cast<Control> (c);
-        const auto id = ids[static_cast<size_t> (c)];
-        knob.onGestureStart = [this, control, id]
+        knob.onGestureStart = [this, control]
         {
             grabKeyboardFocus();
+            auto& id = gestureIds[static_cast<size_t> (control)];
+            id = parameterIdFor (control);
             owner.getParameters().getParameter (id)->beginChangeGesture();
             if (control == colour)
                 hitView.holdColour (true);
             if (control == release)
                 owner.getParameters().getParameter (LuckyCompProcessor::autoReleaseId)->beginChangeGesture();
         };
-        knob.onGestureEnd = [this, control, id]
+        knob.onGestureEnd = [this, control]
         {
-            owner.getParameters().getParameter (id)->endChangeGesture();
+            auto& id = gestureIds[static_cast<size_t> (control)];
+            if (id.isNotEmpty())
+                owner.getParameters().getParameter (id)->endChangeGesture();
+            id.clear();
             if (control == colour)
                 hitView.holdColour (false);
             if (control == release)
@@ -458,27 +459,32 @@ void LuckyCompView::setKnobValue (Control control, float value)
         parameter->setValueNotifyingHost (parameter->convertTo0to1 (v));
     };
 
-    switch (control)
+    if (control == release)
     {
-        case amount: set (LuckyCompProcessor::thresholdId, value); break;
-        case ratio: set (LuckyCompProcessor::ratioId, value); break;
-        case attack: set (LuckyCompProcessor::attackId, value); break;
-        case release:
-            if (value < 0.0f)
-            {
-                set (LuckyCompProcessor::autoReleaseId, 1.0f);
-            }
-            else
-            {
-                set (LuckyCompProcessor::autoReleaseId, 0.0f);
-                set (LuckyCompProcessor::releaseId, value);
-            }
-            break;
-        case mix: set (owner.isBlendMode() ? LuckyCompProcessor::blendId : LuckyCompProcessor::mixId, value); break;
-        case colour: set (LuckyCompProcessor::colourId, value); break;
-        case numControls: break;
+        set (LuckyCompProcessor::autoReleaseId, value < 0.0f ? 1.0f : 0.0f);
+        if (value >= 0.0f)
+            set (LuckyCompProcessor::releaseId, value);
+    }
+    else if (control != numControls)
+    {
+        set (parameterIdFor (control), value);
     }
     sync();
+}
+
+juce::String LuckyCompView::parameterIdFor (Control control) const
+{
+    switch (control)
+    {
+        case amount: return LuckyCompProcessor::thresholdId;
+        case ratio: return LuckyCompProcessor::ratioId;
+        case attack: return LuckyCompProcessor::attackId;
+        case release: return LuckyCompProcessor::releaseId;
+        case colour: return LuckyCompProcessor::colourId;
+        case mix: return owner.isBlendMode() ? LuckyCompProcessor::blendId : LuckyCompProcessor::mixId;
+        case numControls: break;
+    }
+    return {};
 }
 
 float LuckyCompView::releaseSeconds() const
