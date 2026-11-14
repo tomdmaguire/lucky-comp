@@ -19,6 +19,9 @@ float finiteOrSilent (float sample) noexcept
     return std::isfinite (sample) ? sample : 0.0f;
 }
 
+/** Longer than any "hearing audio" window, and far below int overflow however long the silence lasts. */
+constexpr int quietSamplesCap = 1 << 30;
+
 float approach (float value, float target, float step) noexcept
 {
     return value < target ? std::min (target, value + step) : std::max (target, value - step);
@@ -177,7 +180,7 @@ void CompressorEngine::process (juce::AudioBuffer<float>& buffer) noexcept
         if (++meterFill == meterBlockSize)
             pushMeter();
 
-        quietSamples = level > silentLevel ? 0 : quietSamples + 1;
+        quietSamples = level > silentLevel ? 0 : std::min (quietSamples + 1, quietSamplesCap);
     }
 
     reductionNow.store (reduction, std::memory_order_relaxed);

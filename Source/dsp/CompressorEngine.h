@@ -19,8 +19,8 @@ class CompressorEngine
 public:
     /** Samples summarised by each meter entry. */
     static constexpr int meterBlockSize = 128;
-    /** Meter entries kept: about 11 s at 48 kHz. */
-    static constexpr int meterCapacity = 4096;
+    /** Meter entries kept: about 22 s at 48 kHz, and still the live view's 4 s at 192 kHz. */
+    static constexpr int meterCapacity = 8192;
     static constexpr double listenFadeSeconds = 0.02;
     static constexpr double makeupRampSeconds = 0.08;
 
