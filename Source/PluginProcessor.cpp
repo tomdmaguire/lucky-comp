@@ -75,19 +75,21 @@ LuckyCompProcessor::~LuckyCompProcessor()
 
 void LuckyCompProcessor::run()
 {
+    auto lastPredictionMs = 0.0;
     while (! threadShouldExit())
     {
-        if (! isNonRealtime())
-            updateLevelMatch();
+        const auto now = juce::Time::getMillisecondCounterHiRes();
+        if (! isNonRealtime() && isMatching() && now - lastPredictionMs >= matchIntervalSeconds * 1000.0 && updateLevelMatch())
+            lastPredictionMs = now;
         wait (15);
     }
 }
 
-void LuckyCompProcessor::updateLevelMatch()
+bool LuckyCompProcessor::updateLevelMatch()
 {
     const juce::SpinLock::ScopedTryLockType lock (matchLock);
     if (! lock.isLocked())
-        return;
+        return false;
 
     const auto settings = getDetectorSettings();
     const auto blend = getBlend();
@@ -97,18 +99,20 @@ void LuckyCompProcessor::updateLevelMatch()
     const auto refresh = rememberedMatch ? full
                                          : ! full && sound - matchedSound >= static_cast<long long> (matchRefreshSeconds * matcher.getSampleRate());
     if (matchedSettings == settings && matchedBlend == blend && ! refresh)
-        return;
+        return false;
 
-    if (const auto makeup = matcher.predictMakeup (settings, blend))
-    {
-        engine.setWetMakeupTarget (makeup->wet);
-        engine.setMakeupTarget (makeup->trim);
-        engine.setUncompressedTarget (makeup->uncompressed);
-        matchedSettings = settings;
-        matchedBlend = blend;
-        matchedSound = sound;
-        rememberedMatch = false;
-    }
+    const auto makeup = matcher.predictMakeup (settings, blend);
+    if (! makeup)
+        return false;
+
+    engine.setWetMakeupTarget (makeup->wet);
+    engine.setMakeupTarget (makeup->trim);
+    engine.setUncompressedTarget (makeup->uncompressed);
+    matchedSettings = settings;
+    matchedBlend = blend;
+    matchedSound = sound;
+    rememberedMatch = false;
+    return true;
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout LuckyCompProcessor::createLayout()
@@ -156,6 +160,7 @@ void LuckyCompProcessor::prepareToPlay (double sampleRate, int)
     engine.setBlend (getBlend());
     engine.setColour (getColour());
     engine.prepare (sampleRate);
+    samplesSinceMatch = static_cast<int> (matchIntervalSeconds * sampleRate);
     matchedSound = 0;
     rememberedMatch = matchedSettings.has_value();
 }
@@ -192,8 +197,12 @@ void LuckyCompProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     engine.setColour (getColour());
     engine.process (buffer);
 
-    if (isNonRealtime())
-        updateLevelMatch();
+    if (isNonRealtime() && isMatching())
+    {
+        samplesSinceMatch = std::min (samplesSinceMatch + buffer.getNumSamples(), std::numeric_limits<int>::max() / 2);
+        if (samplesSinceMatch >= static_cast<int> (matchIntervalSeconds * getSampleRate()) && updateLevelMatch())
+            samplesSinceMatch = 0;
+    }
 }
 
 void LuckyCompProcessor::setControls (const lucky::Controls& controls)

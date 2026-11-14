@@ -94,8 +94,10 @@ int main (int argc, char** argv)
         processor->updateLevelMatch();
     }
     const auto predictMs = secondsSince (start) * 1000.0 / predictions;
-    std::cout << "\nLevel match, one prediction with a full 3 s history: " << juce::String (predictMs, 2) << " ms (runs every "
-              << "15 ms while a setting changes, so " << juce::String (predictMs / 15.0 * 100.0, 0) << "% of a background core while dragging)\n";
+    const auto intervalMs = LuckyCompProcessor::matchIntervalSeconds * 1000.0;
+    std::cout << "\nLevel match, one prediction with a full 3 s history: " << juce::String (predictMs, 2) << " ms (at most every "
+              << juce::String (juce::roundToInt (intervalMs)) << " ms while a setting changes, so " << juce::String (juce::roundToInt (predictMs / (intervalMs + predictMs) * 100.0))
+              << "% of a background core while dragging; none while Level Match is off)\n";
 
     constexpr auto simulations = 20;
     start = juce::Time::getMillisecondCounterHiRes();

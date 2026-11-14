@@ -10,6 +10,9 @@ class LuckyCompProcessor final : public juce::AudioProcessor,
 public:
     /** How much new sound, at the start, triggers a fresh level-match prediction (until the history is full). */
     static constexpr double matchRefreshSeconds = 0.25;
+    /** Level match predicts at most this often (of wall time, or of audio when rendering offline) while settings
+        move, since each prediction replays 3 s of audio. */
+    static constexpr double matchIntervalSeconds = 0.05;
 
     static inline const juce::String modeId { "mode" };
     static inline const juce::String thresholdId { "threshold" };
@@ -80,11 +83,15 @@ public:
         return isBlendMode() ? lucky::Blend::added (blendParameter->load(), blendSilentDb) : lucky::Blend::mix (mixParameter->load());
     }
 
-    /** Re-predicts the level-match gain if the settings changed, or while the history is still filling with sound.
-        A remembered gain (from the saved session, or from before the host restarted audio) is kept until the
-        history is full, rather than replaced by guesses from the first fraction of a second.
-        Runs on a background thread, and on the audio thread when rendering offline; tests call it directly. */
-    void updateLevelMatch();
+    /** Re-predicts the level-match gain if the settings changed, or while the history is still filling with sound,
+        and returns true if it did. A remembered gain (from the saved session, or from before the host restarted
+        audio) is kept until the history is full, rather than replaced by guesses from the first fraction of a second.
+        Runs on a background thread, and on the audio thread when rendering offline, at most every
+        matchIntervalSeconds and only while Level Match is on; tests call it directly. */
+    bool updateLevelMatch();
+
+    /** True while Level Match is on. */
+    bool isMatching() const noexcept { return matchParameter->load() > 0.5f; }
 
     /** Message thread: renders the Lab's test hit with the current settings and plays it. */
     void playTestHit();
@@ -119,6 +126,7 @@ private:
     long long matchedSound = 0;
     lucky::Blend matchedBlend;
     bool rememberedMatch = false;
+    int samplesSinceMatch = 0;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LuckyCompProcessor)
 };

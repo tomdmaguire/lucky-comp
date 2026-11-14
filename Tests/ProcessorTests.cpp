@@ -217,6 +217,50 @@ public:
                     "compression changes the balance of crack and tail");
         }
 
+        beginTest ("Level match doesn't predict while it's off");
+        {
+            auto p = makeProcessor();
+            p->setNonRealtime (true);
+            setParameter (*p, LuckyCompProcessor::matchId, 0.0f);
+            setParameter (*p, LuckyCompProcessor::thresholdId, -30.0f);
+            run (*p, quietLoop());
+            expectEquals (totalGain (*p), 1.0f);
+            setParameter (*p, LuckyCompProcessor::matchId, 1.0f);
+            juce::AudioBuffer<float> moment (quietLoop());
+            moment.setSize (2, static_cast<int> (rate * 0.1), true);
+            run (*p, moment);
+            expect (totalGain (*p) > 1.5f, "matches once turned back on: " + juce::String (totalGain (*p)));
+        }
+
+        beginTest ("Offline, level match predicts at most every 50 ms of audio while a setting moves");
+        {
+            auto p = makeProcessor();
+            p->setNonRealtime (true);
+            setParameter (*p, LuckyCompProcessor::thresholdId, -20.0f);
+            run (*p, quietLoop());
+            const auto loop = quietLoop();
+            constexpr int smallBlock = 64;
+            juce::MidiBuffer midi;
+            auto changes = 0;
+            auto last = totalGain (*p);
+            const auto seconds = 1.0;
+            for (int start = 0, i = 0; start + smallBlock <= static_cast<int> (seconds * rate); start += smallBlock, ++i)
+            {
+                setParameter (*p, LuckyCompProcessor::thresholdId, -20.0f - static_cast<float> (i % 20));
+                juce::AudioBuffer<float> block (2, smallBlock);
+                for (int ch = 0; ch < 2; ++ch)
+                    block.copyFrom (ch, 0, loop, ch, start, smallBlock);
+                p->processBlock (block, midi);
+                if (! juce::approximatelyEqual (totalGain (*p), last))
+                {
+                    ++changes;
+                    last = totalGain (*p);
+                }
+            }
+            logMessage ("predictions in 1 s of audio: " + juce::String (changes));
+            expect (changes >= 10 && changes <= static_cast<int> (seconds / LuckyCompProcessor::matchIntervalSeconds) + 1);
+        }
+
         beginTest ("After reopening a session, the dials still compress");
         {
             auto p = makeProcessor();
