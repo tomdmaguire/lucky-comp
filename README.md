@@ -29,6 +29,8 @@ A zip for installing by hand is also on the [releases page](https://github.com/t
 - **Window size** from 75% to 200%, and a menu to hide the mode info or the Lab.
 - **Light**: about 0.1 to 0.6% of one core per instance at 48 kHz on an Apple Silicon Mac, the slowest block under 13% of its deadline at a 32-sample buffer, and no latency.
 
+Lucky Comp never goes online.
+
 ## Building
 
 Requirements: macOS 13 or newer, Xcode (with the command line tools selected), CMake 3.25 or newer and Ninja, and [Lucky Labs](https://github.com/tomdmaguire/lucky-labs), the suite's shared code, checked out beside this folder (or pass `-DLUCKY_LABS_DIR=<path>`).
@@ -39,7 +41,7 @@ cmake --build build
 ctest --test-dir build
 ```
 
-JUCE is fetched automatically by CMake. The plug-ins are copied into `~/Library/Audio/Plug-Ins` only if you configure with `-DLUCKY_COMP_INSTALL_AFTER_BUILD=ON`. Pushing a tag such as `v1.0.0` builds, tests and publishes the installer (`Lucky-Comp.pkg`) and a zip through GitHub Actions.
+JUCE is fetched automatically by CMake. The plug-ins are copied into `~/Library/Audio/Plug-Ins` only if you configure with `-DLUCKY_COMP_INSTALL_AFTER_BUILD=ON`. To release, set the version in `CMakeLists.txt` (`project(... VERSION x.y.z)`), rename the changelog's `## Unreleased` section to `## vx.y.z`, then push a tag `vx.y.z`. GitHub Actions checks the three agree, builds, tests, validates the AU, ad-hoc signs and publishes `Lucky-Comp.pkg` and a zip, with that changelog section as the release notes. The release workflow can also be run by hand (Actions → Release → Run workflow) to build the packages without publishing.
 
 ### Tools
 
