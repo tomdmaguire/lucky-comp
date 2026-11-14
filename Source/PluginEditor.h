@@ -90,7 +90,9 @@ private:
     std::optional<lucky::Mode> shownMode;
     juce::String modeTip;
     bool tipsShown = true, labShown = true, comparing = false;
-    bool focusTaken = false;
+    /** Timer ticks (one second's worth) spent asking for keyboard focus when the window opens; some hosts never
+        give it, and asking forever would keep pulling their window to the front. */
+    int focusTriesLeft = 30;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LuckyCompView)
 };

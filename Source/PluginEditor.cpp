@@ -593,10 +593,10 @@ void LuckyCompView::sync()
 
 void LuckyCompView::timerCallback()
 {
-    if (! focusTaken && isShowing())
+    if (focusTriesLeft > 0 && isShowing())
     {
         grabKeyboardFocus();
-        focusTaken = hasKeyboardFocus (false);
+        focusTriesLeft = hasKeyboardFocus (false) ? 0 : focusTriesLeft - 1;
     }
     sync();
 }
