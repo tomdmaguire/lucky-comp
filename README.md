@@ -1,6 +1,6 @@
 # Lucky Comp
 
-Compression by ear. Lucky Comp is a free compressor for macOS (VST3 and AU) that sounds great in a real mix and teaches you how compression works, and how the classic compressors differ, while you use it: four modes in the style of the classics on one set of dials, level matching so you hear the compression rather than the loudness, and a Lab that shows what your settings do to a single snare hit.
+Compression by ear. Lucky Comp is a free compressor for macOS (VST®3 and AU) that sounds great in a real mix and teaches you how compression works, and how the classic compressors differ, while you use it: four modes in the style of the classics on one set of dials, level matching so you hear the compression rather than the loudness, and a Lab that shows what your settings do to a single snare hit.
 
 **[Website and download](https://tomdmaguire.github.io/lucky-comp/)** · a sibling of [Lucky Seven](https://github.com/tomdmaguire/lucky-seven) and [Lucky Reference](https://github.com/tomdmaguire/lucky-reference) · product spec in [`docs/spec.md`](docs/spec.md)
 
@@ -10,9 +10,11 @@ Compression by ear. Lucky Comp is a free compressor for macOS (VST3 and AU) that
 
 Download [**Lucky-Comp.pkg**](https://github.com/tomdmaguire/lucky-comp/releases/latest/download/Lucky-Comp.pkg) and open it. It installs the VST3 and the Audio Unit (Apple Silicon and Intel) into `/Library/Audio/Plug-Ins`.
 
-Lucky Comp isn't signed with a paid Apple developer certificate, so macOS won't open the installer the first time. Click **Done**, then go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
+Lucky Comp isn't signed or notarised by Apple (that needs a paid developer account), so macOS won't open the installer the first time. Click **Done**, then go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
 
 A zip for installing by hand is also on the [releases page](https://github.com/tomdmaguire/lucky-comp/releases/latest); its `INSTALL.txt` explains the steps.
+
+**Updating or removing.** The installer replaces the old version. If you ever copied Lucky Comp into `~/Library/Audio/Plug-Ins` by hand, delete those copies so your DAW doesn't load the old one. To remove Lucky Comp, delete `Lucky Comp.vst3` and `Lucky Comp.component` from `/Library/Audio/Plug-Ins/VST3` and `/Library/Audio/Plug-Ins/Components`.
 
 ## Features
 
@@ -51,6 +53,6 @@ Measurements of our own Behringer 676 and of Lucky Comp are in [`measurements/`]
 
 ## Licence
 
-Lucky Comp is released under the [GNU Affero General Public License v3.0](LICENSE). It is built with [JUCE](https://juce.com), used here under the AGPLv3. The interface is set in Barlow (SIL Open Font License). The test snare is "kensnare1" by spacemanfan on freesound (CC0); see [`Resources/README.md`](Resources/README.md).
+Copyright (C) 2026 Tom Maguire. Lucky Comp is free software under the [GNU Affero General Public License v3.0](LICENSE), with no warranty. It is built with [JUCE](https://juce.com), used here under the AGPLv3; the licences of the third-party code it includes are in Lucky Labs' [`THIRD-PARTY-NOTICES.txt`](https://github.com/tomdmaguire/lucky-labs/blob/main/Resources/THIRD-PARTY-NOTICES.txt), which ships with every release. The interface is set in Barlow (SIL Open Font License, in [Lucky Labs](https://github.com/tomdmaguire/lucky-labs/blob/main/Resources/Fonts/OFL.txt)). The test snare is "kensnare1" by spacemanfan on freesound (CC0); see [`Resources/README.md`](Resources/README.md).
 
-1176, LA-2A and SSL are trademarks of their owners. Lucky Comp is an independent project, not affiliated with or endorsed by them; the names only describe the style each mode follows.
+1176 and LA-2A are trademarks of Universal Audio, Inc.; SSL is a trademark of Solid State Logic; Behringer is a trademark of Music Tribe. Lucky Comp is an independent project, not affiliated with or endorsed by them; the names only describe the style each mode follows. VST is a registered trademark of Steinberg Media Technologies GmbH. Audio Units is a trademark of Apple Inc. Other product names are trademarks of their owners.

@@ -116,6 +116,7 @@
   .manual summary { cursor: pointer; color: var(--text); font-family: var(--display); font-weight: 600; letter-spacing: 0.03em; font-size: 17px; }
   .manual[open] summary { margin-bottom: 8px; }
   .manual p { margin: 8px 0; }
+  .manual + .manual { margin-top: 12px; }
   .points { margin: 18px 0; padding-left: 20px; color: var(--dim); }
   .points li { margin: 0 0 10px; }
   .points strong, .copy p strong { color: var(--text); font-weight: 600; }
@@ -161,7 +162,7 @@
   <div class="wrap">
     <div class="hero">
       <div>
-        <span class="label">Free compressor plugin for macOS &middot; VST3 &amp; AU</span>
+        <span class="label">Free compressor plugin for macOS &middot; VST&reg;3 &amp; AU</span>
         <h1>Compression by ear.</h1>
         <p><strong>A great-sounding compressor for your real mixes that teaches you how compression works, and how the classics differ, while you use it.</strong></p>
         <div class="actions">
@@ -306,7 +307,7 @@
         <li>
           <div>
             <h3>Give the installer permission to run</h3>
-            <p>macOS blocks the installer the first time with <em>&ldquo;Lucky-Comp.pkg&rdquo; Not Opened</em>, because free apps like Lucky Comp aren't signed with a paid Apple certificate. To allow it:</p>
+            <p>macOS blocks the installer the first time with <em>&ldquo;Lucky-Comp.pkg&rdquo; Not Opened</em>, because Lucky Comp isn't signed or notarised by Apple (that needs a paid developer account). To allow it:</p>
             <ol class="substeps">
               <li>Click <strong>Done</strong> (not Move to Trash).</li>
               <li>Open <strong>System Settings &rarr; Privacy &amp; Security</strong> and scroll down to Security.</li>
@@ -336,6 +337,12 @@
           <pre id="unblock">xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/"Lucky Comp.vst3" ~/Library/Audio/Plug-Ins/Components/"Lucky Comp.component"</pre>
           <button type="button" data-copy="unblock">Copy</button>
         </div>
+      </details>
+
+      <details class="manual">
+        <summary>Updating or removing</summary>
+        <p>The installer replaces the old version. If you ever copied Lucky Comp into <code>~/Library/Audio/Plug-Ins</code> by hand, delete those copies so your DAW doesn't load the old one.</p>
+        <p>To remove Lucky Comp, delete <code>Lucky Comp.vst3</code> and <code>Lucky Comp.component</code> from <code>/Library/Audio/Plug-Ins/VST3</code> and <code>/Library/Audio/Plug-Ins/Components</code>.</p>
       </details>
     </div>
   </section>
@@ -368,7 +375,7 @@
 
 <footer>
   <div class="wrap">
-    <p>Lucky Comp is free and open source under the AGPLv3. Built with JUCE; interface set in Barlow (SIL Open Font License). The test snare is "kensnare1" by spacemanfan on freesound (CC0). 1176, LA-2A and SSL are trademarks of their owners, named only to describe the style each mode follows; Lucky Comp isn't affiliated with or endorsed by them.</p>
+    <p>Lucky Comp is free and open source under the AGPLv3. Built with JUCE; interface set in Barlow (SIL Open Font License). The test snare is "kensnare1" by spacemanfan on freesound (CC0). 1176 and LA-2A are trademarks of Universal Audio, Inc. and SSL is a trademark of Solid State Logic, named only to describe the style each mode follows; Lucky Comp isn't affiliated with or endorsed by them. VST is a registered trademark of Steinberg Media Technologies GmbH. Audio Units is a trademark of Apple Inc.</p>
     <p><a href="https://github.com/tomdmaguire/lucky-comp">Source on GitHub</a></p>
   </div>
 </footer>
