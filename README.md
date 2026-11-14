@@ -23,7 +23,7 @@ A zip for installing by hand is also on the [releases page](https://github.com/t
 - **Ears first**: the live view draws your audio before and after, the threshold, and the gain reduction as a line; the number stays hidden until you click **GR**, which asks first (you can turn the question off).
 - **Tips**: one short line under the modes says what each one is and what it's good for.
 - **The Lab**: a real snare (with a little room) run through your settings and drawn cycle by cycle. **S** plays it, compressed exactly as drawn, on its own path so it never touches your track.
-- **Colour**: FET, Opto and VCA add the tone of their classic, voiced from published measurements of real units and from our own hardware measurements (see [`docs/colour-sources.md`](docs/colour-sources.md)). The dial goes from Off straight to 1× ("Like the hardware") and on up to 10×, since below 1× it's too faint to hear; turning it shows the harmonics it adds in the Lab.
+- **Colour**: FET, Opto and VCA add the tone of their classic, voiced from published measurements of real units and from our own hardware measurements (see [`docs/colour-sources.md`](docs/colour-sources.md)). The dial goes from Off straight to 1× ("Like the hardware") and on up to 20×, since below 1× it's too faint to hear; turning it shows the harmonics it adds in the Lab.
 - **Mix or Blend**: Mix crossfades from dry to compressed; Blend keeps the dry signal at 0 dB and adds the compressed one underneath (New York style).
 - **Compare with uncompressed** with **C** (or the hint by the tips, or the ••• menu): your sound without compression, at the same loudness. The whole interface turns grey so you can't mistake it.
 - **Window size** from 75% to 200%, and a menu to hide the mode info or the Lab.

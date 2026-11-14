@@ -127,13 +127,13 @@ public:
             expectWithinAbsoluteError (two - one, 6.02, 0.5);
         }
 
-        beginTest ("The dial: Off, then straight to 1x, 10x at full, and back again");
+        beginTest ("The dial: Off, then straight to 1x, 20x at full, and back again");
         {
             const auto off = Colour::offPosition;
             expectWithinAbsoluteError (Colour::amountAt (0.0f), 0.0f, 1.0e-6f);
             expectWithinAbsoluteError (Colour::amountAt (off * 0.9f), 0.0f, 1.0e-6f);
             expectWithinAbsoluteError (Colour::amountAt (off), 1.0f, 1.0e-6f);
-            expectWithinAbsoluteError (Colour::amountAt (off + (1.0f - off) * 0.5f), std::sqrt (10.0f), 1.0e-4f);
+            expectWithinAbsoluteError (Colour::amountAt (off + (1.0f - off) * 0.5f), std::sqrt (Colour::maxAmount), 1.0e-4f);
             expectWithinAbsoluteError (Colour::amountAt (1.0f), Colour::maxAmount, 1.0e-4f);
             for (const auto amount : { 0.0f, 1.0f, 2.0f, 6.5f, 10.0f })
                 expectWithinAbsoluteError (Colour::amountAt (Colour::positionOf (amount)), amount, 1.0e-4f);

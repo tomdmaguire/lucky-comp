@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Colour now goes up to 20× (was 10×), so its tone is easier to hear on a test tone.
+
 ## v1.0.0
 
 First release.

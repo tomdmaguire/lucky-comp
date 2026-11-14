@@ -26,7 +26,7 @@ struct ColourSettings
     Harmonics come from x + e·(h2·u² + h3·u³) with u = x / e, e the signal's own peak envelope, so each harmonic's
     level relative to the signal (dBc) is set directly: H2 = h2 / 2, H3 = h3 / 4. A DC blocker takes out the
     offset the even term adds. Levels are read as dBu with 0 dBFS = +18 dBu. The amount scales the harmonics (2× is
-    +6 dB per harmonic, 10× is +20 dB) and blends the EQ (2× doubles its deviation, and it goes no further).
+    +6 dB per harmonic, 10× is +20 dB, 20× is +26 dB) and blends the EQ (2× doubles its deviation, and it goes no further).
 
     - FET: the output stage's third harmonic, −52 dBc at +16 dBu falling 2 dB per dB below it (Moore). While
       compressing (our Behringer 676, measurements/676/): the FET's second harmonic ramps in to −62 dBc by 2.5 dB of
@@ -78,7 +78,7 @@ public:
     static constexpr float vcaH3BelowH2Db = 24.0f;
 
     /** The dial goes this far past the hardware, so the tone can be heard clearly and then backed off. */
-    static constexpr float maxAmount = 10.0f;
+    static constexpr float maxAmount = 20.0f;
     /** The EQ stops exaggerating here: ten times Opto's roll-off would be a treble cut, not colour. */
     static constexpr float maxEqAmount = 2.0f;
     /** No harmonic goes above this, which keeps the waveshaper monotonic (H2 must stay below -12 dBc). */

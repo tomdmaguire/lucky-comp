@@ -256,7 +256,7 @@ Knob::Spec mixSpec()
 /** How far either side of the 1× tick (as a fraction of the dial) a drag snaps to exactly 1×: about 6 px of drag. */
 constexpr float likeHardwareDetent = 0.03f;
 
-/** Colour from Off straight to 1× (typical hardware, ticked just after Off) and on to 10×, exaggerated so it can
+/** Colour from Off straight to 1× (typical hardware, ticked just after Off) and on to 20×, exaggerated so it can
     be heard. Clean has none. */
 Knob::Spec colourSpec (Mode mode)
 {
