@@ -85,8 +85,15 @@ void Colour::setSettings (const ColourSettings& newSettings) noexcept
         return;
 
     settings = newSettings;
+    const auto wasActive = active;
     active = settings.mode != Mode::clean && settings.amount > 1.0e-4f;
     amountDb = active ? 20.0f * std::log10 (settings.amount) : -200.0f;
+    if (active && ! wasActive)
+    {
+        envelope.fill (0.0f);
+        blockerIn.fill (0.0f);
+        blockerOut.fill (0.0f);
+    }
     updateEq();
 }
 

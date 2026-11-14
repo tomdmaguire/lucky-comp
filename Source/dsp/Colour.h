@@ -104,6 +104,7 @@ public:
 
     void prepare (double sampleRate);
     void reset() noexcept;
+    /** Turning Colour on starts it from silence, so nothing left from when it was last on can click. */
     void setSettings (const ColourSettings&) noexcept;
 
     /** True when the mode has a tone and the amount is above zero. */
