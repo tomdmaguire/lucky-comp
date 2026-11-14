@@ -37,8 +37,8 @@ figure here comes from a software plugin. Levels in dBu are converted with 0 dBF
 - **A. Moore, thesis (above), Table 5-1**, one Teletronix unit, no reduction: THD 0.20% at 0 dBu, 0.50% at +9 dBu,
   0.90% at +16 dBu; H2/H3 −54/−85 dBc at 0 dBu rising to −41/−57 dBc at +16 dBu (tube stage, second harmonic first).
 - **A. Moore, "Objective Analysis and Perceptual Evaluation of LA-2A Compressors and Vocal Recordings", JAES 74(1/2),
-  2026**, six units (three vintage, three reissues), draft:
-  https://artefacts-discovery.researcher.life/full_text/DA-2/d8/d83e5c396d1d3fada2b6a691f987893c/full_text/ef0df7bb11eeb03f281eea16a4b20579.pdf
+  61–72, 2026**, six units (three vintage, three reissues): https://doi.org/10.17743/jaes.2022.0240 (author's accepted
+  manuscript: https://pure.hud.ac.uk/files/140787498/AAM.pdf)
   - At 6 dB of reduction, +4 dBu: THD 0.75–4.22%, **third harmonic dominant** at −28 to −42 dBc, "typically 10–20 dB
     higher than second"; H2 −47 to −76 dBc; roughly flat across 63 Hz–1 kHz.
   - Response with no reduction: no unit met ±0.1 dB; 0.5–1.3 dB variation over 30 Hz–15 kHz, with a fall of 2.2–3.5 dB

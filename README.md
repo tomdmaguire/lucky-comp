@@ -46,7 +46,7 @@ JUCE is fetched automatically by CMake. The plug-ins are copied into `~/Library/
 ```sh
 build/LuckyCompBench [seconds]          # CPU per instance, level-match prediction and Lab timings
 build/LuckyCompSnapshot <scene> out.png # renders the editor (clean, fet, opto, vca, ask, fet-colour, ...)
-build/LuckyCompMeasure_artefacts/Release/LuckyCompMeasure ...  # measures a VST3, or hardware through an audio interface
+build/LuckyCompMeasure_artefacts/Release/LuckyCompMeasure ...  # measures Lucky Comp, or hardware through an audio interface
 ```
 
 Measurements of our own Behringer 676 and of Lucky Comp are in [`measurements/`](measurements/).

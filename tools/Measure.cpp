@@ -5,7 +5,8 @@
 #include <iostream>
 #include <numbers>
 
-/** Measures a compressor, plugin or hardware, for Lucky Comp's colour and dynamics models. See docs/colour-plan.md.
+/** Measures Lucky Comp, or hardware through an audio interface, for Lucky Comp's colour and dynamics models.
+    See docs/colour-plan.md.
 
     LuckyCompMeasure <plugin.vst3> params
     LuckyCompMeasure <plugin.vst3> [Name=value ...] <test> <out.csv>
