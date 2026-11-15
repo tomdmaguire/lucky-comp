@@ -1,10 +1,5 @@
 # Changelog
 
-## Unreleased
-
-- Lucky Comp is now Lucky Compressor, with a new logo. Sessions saved with Lucky Comp open in Lucky Compressor with their settings.
-- Colour now goes up to 20× (was 10×), so its tone is easier to hear on a test tone.
-
 ## v1.0.0
 
 First release.
@@ -14,7 +9,7 @@ First release.
 - Live view of your audio before and after, with the threshold and the gain reduction drawn as a line; the gain-reduction number stays hidden until you ask for it.
 - A one-line tip for each mode: what it is and what it's good for.
 - The Lab: a real snare through your settings, drawn cycle by cycle. S plays it; C compares it with uncompressed.
-- Colour for FET, Opto and VCA, voiced from published measurements of real units and from our own Behringer 676, from Off straight to 1× and on to 10×. Turning it shows the harmonics it adds.
+- Colour for FET, Opto and VCA, voiced from published measurements of real units and from our own Behringer 676, from Off straight to 1× and on to 20×. Turning it shows the harmonics it adds.
 - Compare with uncompressed (C, the hint by the tips, or the ••• menu): your sound without compression at the same loudness; the interface turns grey while you listen.
 - Mix (dry to compressed) or Blend (dry at 0 dB, compressed added underneath).
 - VST3 and Audio Unit for Apple Silicon and Intel, macOS 13 or newer.
