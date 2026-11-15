@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lucky Comp</title>
-<meta name="description" content="Lucky Comp: a free compressor plugin for macOS that sounds great in a real mix and teaches you to hear compression while you use it. Clean, FET, Opto and VCA modes on the same dials, level matching, a Lab that shows attack and release on a real snare, and colour voiced from published measurements of the classic units.">
-<meta property="og:title" content="Lucky Comp">
+<title>Lucky Compressor</title>
+<meta name="description" content="Lucky Compressor: a free compressor plugin for macOS that sounds great in a real mix and lets you hear exactly what compression is doing. Clean, FET, Opto and VCA modes on the same dials, level matching, a Lab that shows attack and release on a real snare, and colour voiced from published measurements of the classic units.">
+<meta property="og:title" content="Lucky Compressor">
 <meta property="og:description" content="Compression by ear, with a compressor good enough for your real mixes. Free for macOS, VST3 and AU.">
-<meta property="og:image" content="https://tomdmaguire.github.io/lucky-comp/assets/fet.png">
+<meta property="og:image" content="https://tomdmaguire.github.io/lucky-compressor/assets/fet.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
@@ -49,7 +49,7 @@
   .brand img { width: 30px; height: 30px; }
   .brand span { font-family: var(--display); font-weight: 600; letter-spacing: 0.14em; font-size: 17px; }
   nav { display: flex; gap: 22px; }
-  nav a { color: var(--dim); text-decoration: none; font-family: var(--display); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; font-size: 14px; }
+  nav a { white-space: nowrap; color: var(--dim); text-decoration: none; font-family: var(--display); font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; font-size: 14px; }
   nav a:hover { color: var(--text); }
 
   .hero { padding-block: 72px 40px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 48px; align-items: center; }
@@ -64,12 +64,15 @@
   .button.secondary:hover { border-color: var(--dim); }
   .hero .specs { margin-top: 20px; font-size: 14px; color: var(--dim); }
 
-  /* The plugin's segment "C", taking each mode's colour in turn, as the plugin's logo does. */
+  /* The plugin's ripple logo, taking each mode's colour in turn, as the plugin's logo does. */
   .glyph { justify-self: center; width: min(100%, 260px); display: grid; justify-items: center; gap: 14px; }
-  .glyph svg { width: 70%; overflow: visible; }
-  .glyph path { fill: none; stroke-width: 5.5; stroke-linecap: round; stroke: var(--mode, var(--gold)); transition: stroke 0.5s ease, filter 0.5s ease; }
-  .glyph .lit { filter: drop-shadow(0 0 9px color-mix(in srgb, var(--mode, var(--gold)) 55%, transparent)); }
-  .glyph .off { opacity: 0.1; }
+  .glyph svg { width: 100%; overflow: visible; }
+  .glyph circle { transition: stroke 0.5s ease, fill 0.5s ease, filter 0.5s ease; }
+  .glyph .ring { fill: none; stroke-width: 2; stroke: var(--mode, var(--gold)); }
+  .glyph .ring:nth-of-type(1) { opacity: 0.75; }
+  .glyph .ring:nth-of-type(2) { opacity: 0.45; }
+  .glyph .ring:nth-of-type(3) { opacity: 0.2; }
+  .glyph .dot { fill: var(--mode, var(--gold)); filter: drop-shadow(0 0 9px color-mix(in srgb, var(--mode, var(--gold)) 55%, transparent)); }
   .glyph .mode { font-family: var(--display); font-weight: 600; letter-spacing: 0.16em; font-size: 15px; color: var(--mode, var(--gold)); transition: color 0.5s ease; }
 
   .shot { margin: 8px 0 0; }
@@ -118,8 +121,9 @@
   .notes p { margin: 0; }
 
   footer { border-top: 1px solid var(--line); padding-block: 36px 48px; color: var(--dim); font-size: 14px; }
-  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px 32px; }
-  footer p { margin: 0; max-width: 70ch; }
+  footer .wrap { display: grid; gap: 12px; }
+  footer .lead { color: var(--text); }
+  footer p { margin: 0; }
 
   @media (max-width: 980px) { .modes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   @media (max-width: 860px) {
@@ -137,13 +141,13 @@
 
 <header class="top">
   <div class="wrap">
-    <a class="brand" href="#top"><img src="assets/logo.svg" alt=""><span>LUCKY COMP</span></a>
+    <a class="brand" href="#top"><img src="assets/logo.svg" alt=""><span>LUCKY COMPRESSOR</span></a>
     <nav aria-label="Sections">
       <a class="optional" href="#features">Features</a>
       <a class="optional" href="#modes">Modes</a>
       <a class="optional" href="#how">How to use</a>
-      <a href="#install">Install</a>
-      <a href="https://github.com/tomdmaguire/lucky-comp">GitHub</a>
+      <a class="optional" href="#install">Install</a>
+      <a href="https://tomdmaguire.github.io/lucky-labs/">More plugins</a>
     </nav>
   </div>
 </header>
@@ -152,27 +156,24 @@
   <div class="wrap">
     <div class="hero">
       <div>
-        <span class="label">Free compressor plugin for macOS &middot; VST&reg;3 &amp; AU</span>
+        <span class="label">Free compressor plugin for macOS &middot; VST3 &amp; AU</span>
         <h1>Compression by ear.</h1>
-        <p><strong>A great-sounding compressor for your real mixes that teaches you how compression works, and how the classics differ, while you use it.</strong></p>
+        <p><strong>A great-sounding compressor for real mixes that lets you hear exactly what compression is doing, and why.</strong></p>
         <div class="actions">
-          <a class="button primary" href="https://github.com/tomdmaguire/lucky-comp/releases/latest/download/Lucky-Comp.pkg">Download for Mac</a>
+          <a class="button primary" href="https://github.com/tomdmaguire/lucky-compressor/releases/latest/download/Lucky-Compressor.pkg">Download for Mac</a>
           <a class="button secondary" href="#install">How to install</a>
         </div>
         <p class="specs">Free and open source &middot; Apple Silicon &amp; Intel &middot; macOS 13 or newer</p>
       </div>
 
       <div class="glyph" aria-hidden="true">
-        <svg viewBox="12 8 40 50">
-          <path class="lit" d="M22 14 H42"/><path class="lit" d="M19 17 V30"/><path class="lit" d="M19 35 V48"/><path class="lit" d="M22 51 H42"/>
-          <path class="off" d="M45 17 V30"/><path class="off" d="M22 32.5 H42"/><path class="off" d="M45 35 V48"/>
-        </svg>
+        <svg viewBox="0 0 64 64"><circle class="ring" cx="32" cy="32" r="11.5"/><circle class="ring" cx="32" cy="32" r="18"/><circle class="ring" cx="32" cy="32" r="24.5"/><circle class="dot" cx="32" cy="32" r="5"/></svg>
         <span class="mode">CLEAN</span>
       </div>
     </div>
 
     <figure class="shot">
-      <img src="assets/fet.png" width="1800" height="1200" alt="Lucky Comp in FET mode on a drum loop. A one-line tip at the top describes the mode. The live view shows the input faint and the compressed signal solid, with the gain reduction as a white line from the top. The Lab on the right runs a test snare through the same settings. Six knobs: Input, Ratio, Attack, Release, Colour and Mix.">
+      <img src="assets/fet.png" width="1800" height="1200" alt="Lucky Compressor in FET mode on a drum loop. A one-line tip at the top describes the mode. The live view shows the input faint and the compressed signal solid, with the gain reduction as a white line from the top. The Lab on the right runs a test snare through the same settings. Six knobs: Input, Ratio, Attack, Release, Colour and Mix.">
       <figcaption>FET mode on a drum loop. The white line is the compression; the Lab on the right shows what the same settings do to a single snare hit.</figcaption>
     </figure>
   </div>
@@ -180,11 +181,23 @@
   <section id="features">
     <div class="wrap">
       <span class="label">What it does</span>
-      <h2>A compressor that shows its working.</h2>
+      <h2>Your ears do the work.</h2>
       <div class="features">
+        <div class="feature" style="--dot: var(--blue)">
+          <h3>The classics, side by side</h3>
+          <p>Clean, FET, Opto and VCA share one set of dials marked in real milliseconds, so you can see where each classic sits: an 1176-style FET can't attack slower than 0.8&nbsp;ms, an LA-2A-style Opto is always 10&nbsp;ms.</p>
+        </div>
         <div class="feature" style="--dot: var(--gold)">
           <h3>Hear compression, not loudness</h3>
-          <p>Louder always sounds better, so Level Match turns the compressed sound to the same loudness as your track before you hear it. Press <kbd>C</kbd> to compare with uncompressed, fairly. Level-matched as you turn, then held steady.</p>
+          <p>Louder always sounds better, so Level Match turns the compressed sound to the same loudness as your track before you hear it. Level-matched as you turn, then held steady.</p>
+        </div>
+        <div class="feature" style="--dot: var(--cream)">
+          <h3>Parallel built in</h3>
+          <p>Mix crossfades from dry to compressed, and both sides arrive equally loud, so the whole knob is useful. Switch to Blend for New York-style compression: your dry track stays at 0&nbsp;dB and the compressed one is added underneath.</p>
+        </div>
+        <div class="feature" style="--dot: var(--aqua)">
+          <h3>Colour you can turn up</h3>
+          <p>Each mode adds the tone of its classic, voiced from published measurements of real units. Turn it up to hear the character clearly, then back it off. The Lab shows the harmonics it adds as you turn it.</p>
         </div>
         <div class="feature" style="--dot: var(--pink)">
           <h3>Ears first</h3>
@@ -192,19 +205,7 @@
         </div>
         <div class="feature" style="--dot: var(--green)">
           <h3>The Lab</h3>
-          <p>A real snare, run through your settings and drawn cycle by cycle: watch a fast attack flatten the crack and a slow release leave the room squashed. Press <kbd>S</kbd> to hear it, compressed exactly as shown, without touching your track.</p>
-        </div>
-        <div class="feature" style="--dot: var(--blue)">
-          <h3>The classics, side by side</h3>
-          <p>Clean, FET, Opto and VCA share one set of dials marked in real milliseconds, so you can see where each classic sits: an 1176-style FET can't attack slower than 0.8&nbsp;ms, an LA-2A-style Opto is always 10&nbsp;ms. Switch modes and each remembers its own settings.</p>
-        </div>
-        <div class="feature" style="--dot: var(--aqua)">
-          <h3>Colour you can turn up</h3>
-          <p>Each mode adds the tone of its classic, voiced from published measurements of real units. Just past Off it's like the hardware, which is subtle; turn it towards 10&times; to hear the character clearly, then back it off. The Lab shows the harmonics it adds as you turn it.</p>
-        </div>
-        <div class="feature" style="--dot: var(--cream)">
-          <h3>Parallel built in</h3>
-          <p>Mix crossfades from dry to compressed, and both sides arrive equally loud, so the whole knob is useful. Switch to Blend for New York-style compression: your dry track stays at 0&nbsp;dB and the compressed one is added underneath.</p>
+          <p>A real snare, run through your settings and drawn cycle by cycle: watch a fast attack flatten the crack and a slow release leave the room squashed.</p>
         </div>
       </div>
     </div>
@@ -214,12 +215,12 @@
     <div class="wrap">
       <span class="label">Modes</span>
       <h2>Four characters, one set of dials.</h2>
-      <p class="intro">Each mode follows the published behaviour of the compressor it's named after: its attack and release range, its ratios, the way it lets go, and the controls it gives you. They aren't circuit clones; they're the characters, there to learn from and to mix with.</p>
+      <p class="intro">Each mode follows the published behaviour of the compressor it's named after: its attack and release range, its ratios, the way it lets go, and the controls it gives you. Four carefully modelled compression behaviours, not circuit clones: the characters, ready to mix with.</p>
       <div class="features modes">
         <div class="feature" style="--dot: var(--gold)">
           <h3>Clean</h3>
           <p class="think">Transparent</p>
-          <p>A modern, uncoloured compressor with every time in milliseconds: attack from 10&nbsp;&micro;s to 100&nbsp;ms, release from 5&nbsp;ms to 5&nbsp;s, ratio from 1:1 to 20:1. The place to start learning.</p>
+          <p>A modern, uncoloured compressor with every time in milliseconds: attack from 10&nbsp;&micro;s to 100&nbsp;ms, release from 5&nbsp;ms to 5&nbsp;s, ratio from 1:1 to 20:1. The place to start.</p>
         </div>
         <div class="feature" style="--dot: var(--pink)">
           <h3>FET</h3>
@@ -240,10 +241,10 @@
       <div class="split" style="margin-top: 48px">
         <div class="copy">
           <p><strong>Colour from the real units.</strong> FET, Opto and VCA each add the tone of their classic: the harmonics it adds, how they grow with level and compression, and any roll-off at the ends of the spectrum. It's voiced from the original manuals, academic measurements of real 1176s and LA-2As, the VCA chip's datasheet, and our own measurements of a hardware FET compressor.</p>
-          <p class="aside">Every figure and its source is listed in <a href="https://github.com/tomdmaguire/lucky-comp/blob/main/docs/colour-sources.md">colour-sources.md</a>. Thanks to Austin Moore (University of Huddersfield) for his published measurements of real 1176s and LA-2As.</p>
+          <p class="aside">Every figure and its source is listed in <a href="https://github.com/tomdmaguire/lucky-compressor/blob/main/docs/colour-sources.md">colour-sources.md</a>. Thanks to Austin Moore (University of Huddersfield) for his published measurements of real 1176s and LA-2As.</p>
         </div>
         <figure class="shot">
-          <img src="assets/opto-colour.png" width="1800" height="1200" loading="lazy" alt="Lucky Comp in Opto mode with Colour at 5 times. A panel in the Lab reads Harmonics added: 2nd (warm) at minus 33 dB and 3rd (edgy) at minus 28 dB below the hit.">
+          <img src="assets/opto-colour.png" width="1800" height="1200" loading="lazy" alt="Lucky Compressor in Opto mode with Colour at 5 times. A panel in the Lab reads Harmonics added: 2nd (warm) at minus 33 dB and 3rd (edgy) at minus 28 dB below the hit.">
           <figcaption>Turning Colour shows the harmonics it adds to the test snare: here Opto at 5&times;, mostly edgy third harmonic.</figcaption>
         </figure>
       </div>
@@ -253,7 +254,7 @@
   <section id="how">
     <div class="wrap">
       <span class="label">How to use</span>
-      <h2>Listen first, then check.</h2>
+      <h2>Set it by ear.</h2>
       <div class="split">
         <ol class="steps">
           <li>
@@ -265,19 +266,19 @@
           <li>
             <div>
               <h3>Pull the threshold down until you hear it</h3>
-              <p>Set attack and release and listen to how the hits change. The white line shows how hard it's working.</p>
+              <p>Level Match keeps it as loud as your track, so the only thing that changes is the compression: the punch, the sustain, the room.</p>
             </div>
           </li>
           <li>
             <div>
-              <h3>Compare at the same loudness</h3>
-              <p>Press <kbd>C</kbd> to flip between uncompressed and compressed. Guess how many dB it's taking off, then click <strong>GR</strong> to check.</p>
+              <h3>Trust what you hear</h3>
+              <p>The gain-reduction number stays hidden, so you set it by sound, not by a number. Click <strong>GR</strong> when you want to check.</p>
             </div>
           </li>
         </ol>
         <figure class="shot">
-          <img src="assets/ask.png" width="1800" height="1200" loading="lazy" alt="Lucky Comp asking 'Show the gain-reduction number?' in a panel attached to the GR button, recommending keeping it hidden, with Show GR and Keep it hidden buttons and a Don't ask again box.">
-          <figcaption>The number is one click away, but Lucky Comp asks first: try guessing by ear.</figcaption>
+          <img src="assets/ask.png" width="1800" height="1200" loading="lazy" alt="Lucky Compressor asking 'Show the gain-reduction number?' in a panel attached to the GR button, recommending keeping it hidden, with Show GR and Keep it hidden buttons and a Don't ask again box.">
+          <figcaption>The number is one click away, but Lucky Compressor asks first: try guessing by ear.</figcaption>
         </figure>
       </div>
     </div>
@@ -291,13 +292,13 @@
         <li>
           <div>
             <h3>Download the installer</h3>
-            <p><a href="https://github.com/tomdmaguire/lucky-comp/releases/latest/download/Lucky-Comp.pkg">Download Lucky-Comp.pkg</a> and double-click it.</p>
+            <p><a href="https://github.com/tomdmaguire/lucky-compressor/releases/latest/download/Lucky-Compressor.pkg">Download Lucky-Compressor.pkg</a> and double-click it.</p>
           </div>
         </li>
         <li>
           <div>
             <h3>Give the installer permission to run</h3>
-            <p>macOS blocks the installer the first time with <em>&ldquo;Lucky-Comp.pkg&rdquo; Not Opened</em>, because Lucky Comp isn't signed or notarised by Apple (that needs a paid developer account). To allow it:</p>
+            <p>macOS blocks the installer the first time with <em>&ldquo;Lucky-Compressor.pkg&rdquo; Not Opened</em>, because Lucky Compressor isn't signed or notarised by Apple (that needs a paid developer account). To allow it:</p>
             <ol class="substeps">
               <li>Click <strong>Done</strong> (not Move to Trash).</li>
               <li>Open <strong>System Settings &rarr; Privacy &amp; Security</strong> and scroll down to Security.</li>
@@ -315,24 +316,24 @@
         <li>
           <div>
             <h3>Open it in your DAW</h3>
-            <p>Add Lucky Comp to a track (rescan plug-ins first if it doesn't appear).</p>
+            <p>Add Lucky Compressor to a track (rescan plug-ins first if it doesn't appear).</p>
           </div>
         </li>
       </ol>
 
       <details class="manual">
         <summary>Prefer to install by hand?</summary>
-        <p>Download the zip from the <a href="https://github.com/tomdmaguire/lucky-comp/releases/latest">releases page</a>, copy <code>Lucky Comp.vst3</code> into <code>~/Library/Audio/Plug-Ins/VST3</code> and <code>Lucky Comp.component</code> into <code>~/Library/Audio/Plug-Ins/Components</code>. Then unblock them in Terminal:</p>
+        <p>Download the zip from the <a href="https://github.com/tomdmaguire/lucky-compressor/releases/latest">releases page</a>, copy <code>Lucky Compressor.vst3</code> into <code>~/Library/Audio/Plug-Ins/VST3</code> and <code>Lucky Compressor.component</code> into <code>~/Library/Audio/Plug-Ins/Components</code>. Then unblock them in Terminal:</p>
         <div class="command">
-          <pre id="unblock">xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/"Lucky Comp.vst3" ~/Library/Audio/Plug-Ins/Components/"Lucky Comp.component"</pre>
+          <pre id="unblock">xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/"Lucky Compressor.vst3" ~/Library/Audio/Plug-Ins/Components/"Lucky Compressor.component"</pre>
           <button type="button" data-copy="unblock">Copy</button>
         </div>
       </details>
 
       <details class="manual">
         <summary>Updating or removing</summary>
-        <p>The installer replaces the old version. If you ever copied Lucky Comp into <code>~/Library/Audio/Plug-Ins</code> by hand, delete those copies so your DAW doesn't load the old one.</p>
-        <p>To remove Lucky Comp, delete <code>Lucky Comp.vst3</code> and <code>Lucky Comp.component</code> from <code>/Library/Audio/Plug-Ins/VST3</code> and <code>/Library/Audio/Plug-Ins/Components</code>.</p>
+        <p>The installer replaces the old version. If you ever copied Lucky Compressor into <code>~/Library/Audio/Plug-Ins</code> by hand, delete those copies so your DAW doesn't load the old one.</p>
+        <p>To remove Lucky Compressor, delete <code>Lucky Compressor.vst3</code> and <code>Lucky Compressor.component</code> from <code>/Library/Audio/Plug-Ins/VST3</code> and <code>/Library/Audio/Plug-Ins/Components</code>.</p>
       </details>
     </div>
   </section>
@@ -356,7 +357,7 @@
         </div>
         <div>
           <h3>Open source</h3>
-          <p>The code is on <a href="https://github.com/tomdmaguire/lucky-comp">GitHub</a> under the AGPLv3. Bug reports and ideas are welcome as issues.</p>
+          <p>The code is on <a href="https://github.com/tomdmaguire/lucky-compressor">GitHub</a> under the AGPLv3. Bug reports, ideas and pull requests are welcome.</p>
         </div>
       </div>
     </div>
@@ -365,8 +366,9 @@
 
 <footer>
   <div class="wrap">
-    <p>Lucky Comp by <a href="https://github.com/tomdmaguire">Tom Maguire</a>. Free and open source under the AGPLv3. Built with JUCE; interface set in Barlow (SIL Open Font License). The test snare is "kensnare1" by spacemanfan on freesound (CC0). 1176 and LA-2A are trademarks of Universal Audio, Inc. and SSL is a trademark of Solid State Logic, named only to describe the style each mode follows; Lucky Comp isn't affiliated with or endorsed by them. VST is a registered trademark of Steinberg Media Technologies GmbH. Audio Units is a trademark of Apple Inc.</p>
-    <p><a href="https://github.com/tomdmaguire/lucky-comp">Source on GitHub</a></p>
+    <p class="lead">Lucky Compressor is part of <a href="https://tomdmaguire.github.io/lucky-labs/">Lucky Labs</a>, alongside <a href="https://tomdmaguire.github.io/lucky-reverb/">Lucky Reverb</a> and <a href="https://tomdmaguire.github.io/lucky-reference/">Lucky Reference</a>. The source is on <a href="https://github.com/tomdmaguire/lucky-compressor">GitHub</a>.</p>
+    <p>Lucky Compressor by <a href="https://github.com/tomdmaguire">Tom Maguire</a>. Free and open source under the AGPLv3. Built with JUCE; interface set in Barlow (SIL Open Font License). The test snare is "kensnare1" by spacemanfan on freesound (CC0).</p>
+    <p>1176 and LA-2A are trademarks of Universal Audio, Inc. and SSL is a trademark of Solid State Logic, named only to describe the style each mode follows; Lucky Compressor isn't affiliated with or endorsed by them. VST is a registered trademark of Steinberg Media Technologies GmbH. Audio Units is a trademark of Apple Inc.</p>
   </div>
 </footer>
 
