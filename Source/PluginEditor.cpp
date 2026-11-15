@@ -663,8 +663,8 @@ void LuckyCompView::paint (juce::Graphics& g)
     g.fillRect (top.getRight() - menuWidth - 1, top.getY(), 1, top.getHeight());
 
     const auto colourOfMode = accent();
-    const auto glyph = juce::Rectangle<float> (14.0f, 6.0f, 40.0f, 40.0f);
-    segment::paint (g, glyph, segment::top | segment::bottom | segment::topLeft | segment::bottomLeft, colourOfMode);
+    const auto logo = juce::Rectangle<float> (16.0f, (float) (topBarHeight - 28) * 0.5f, 28.0f, 28.0f);
+    ripple::paint (g, logo, colourOfMode);
     g.setColour (theme::text);
     g.setFont (theme::labelFont (17.0f).withStyle ("Bold"));
     g.drawText ("LUCKY COMP", juce::Rectangle<int> (60, 0, brandWidth - 64, topBarHeight), juce::Justification::centredLeft);
