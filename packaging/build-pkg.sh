@@ -1,6 +1,6 @@
 #!/bin/bash
-# Builds a macOS installer package for Lucky Comp.
-# Usage: build-pkg.sh <version> <path to Lucky Comp.vst3> <path to Lucky Comp.component> <output .pkg>
+# Builds a macOS installer package for Lucky Compressor.
+# Usage: build-pkg.sh <version> <path to Lucky Compressor.vst3> <path to Lucky Compressor.component> <output .pkg>
 set -euo pipefail
 
 version="$1"
@@ -12,8 +12,8 @@ work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
 mkdir -p "$work/vst3/Library/Audio/Plug-Ins/VST3" "$work/au/Library/Audio/Plug-Ins/Components" "$work/packages"
-ditto "$vst3" "$work/vst3/Library/Audio/Plug-Ins/VST3/Lucky Comp.vst3"
-ditto "$component" "$work/au/Library/Audio/Plug-Ins/Components/Lucky Comp.component"
+ditto "$vst3" "$work/vst3/Library/Audio/Plug-Ins/VST3/Lucky Compressor.vst3"
+ditto "$component" "$work/au/Library/Audio/Plug-Ins/Components/Lucky Compressor.component"
 
 for kind in vst3 au; do
   pkgbuild --analyze --root "$work/$kind" "$work/$kind.plist" > /dev/null
@@ -21,12 +21,12 @@ for kind in vst3 au; do
 done
 
 pkgbuild --quiet --root "$work/vst3" --component-plist "$work/vst3.plist" \
-  --identifier com.luckylabs.luckycomp.vst3 --version "$version" --install-location / \
-  "$work/packages/LuckyComp-VST3.pkg"
+  --identifier com.luckylabs.luckycompressor.vst3 --version "$version" --install-location / \
+  "$work/packages/LuckyCompressor-VST3.pkg"
 
 pkgbuild --quiet --root "$work/au" --component-plist "$work/au.plist" --scripts "$here/pkg-scripts/au" \
-  --identifier com.luckylabs.luckycomp.au --version "$version" --install-location / \
-  "$work/packages/LuckyComp-AU.pkg"
+  --identifier com.luckylabs.luckycompressor.au --version "$version" --install-location / \
+  "$work/packages/LuckyCompressor-AU.pkg"
 
 sed "s/__VERSION__/$version/g" "$here/distribution.xml" > "$work/distribution.xml"
 productbuild --quiet --distribution "$work/distribution.xml" --package-path "$work/packages" \

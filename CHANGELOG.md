@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Lucky Comp is now Lucky Compressor, with a new logo. Sessions saved with Lucky Comp open in Lucky Compressor with their settings.
 - Colour now goes up to 20× (was 10×), so its tone is easier to hear on a test tone.
 
 ## v1.0.0

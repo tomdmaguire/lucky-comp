@@ -4,7 +4,7 @@
 #include "dsp/Modes.h"
 #include <juce_audio_processors/juce_audio_processors.h>
 
-class LuckyCompProcessor final : public juce::AudioProcessor,
+class LuckyCompressorProcessor final : public juce::AudioProcessor,
                                  private juce::Thread
 {
 public:
@@ -27,11 +27,11 @@ public:
     static inline const juce::String blendId { "blend" };
     static inline const juce::String colourId { "colour" };
     static inline const juce::StringArray mixModes { "Mix", "Blend" };
-    /** Blend at or below this is silent (−∞), as in Lucky Seven. */
+    /** Blend at or below this is silent (−∞), as in Lucky Reverb. */
     static constexpr float blendSilentDb = -60.0f;
 
-    LuckyCompProcessor();
-    ~LuckyCompProcessor() override;
+    LuckyCompressorProcessor();
+    ~LuckyCompressorProcessor() override;
 
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override {}
@@ -128,5 +128,5 @@ private:
     bool rememberedMatch = false;
     int samplesSinceMatch = 0;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LuckyCompProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LuckyCompressorProcessor)
 };

@@ -43,12 +43,12 @@ juce::String formatMs (float ms, int)
 }
 } // namespace
 
-LuckyCompProcessor::LuckyCompProcessor()
+LuckyCompressorProcessor::LuckyCompressorProcessor()
     : AudioProcessor (BusesProperties()
                           .withInput ("Input", juce::AudioChannelSet::stereo(), true)
                           .withOutput ("Output", juce::AudioChannelSet::stereo(), true)),
-      juce::Thread ("Lucky Comp level match"),
-      parameters (*this, nullptr, "LuckyComp", createLayout())
+      juce::Thread ("Lucky Compressor level match"),
+      parameters (*this, nullptr, "LuckyComp" /* Lucky Comp's state type, so sessions saved before the rename still load */, createLayout())
 {
     for (int m = 0; m < lucky::numModes; ++m)
         memory[static_cast<size_t> (m)] = lucky::modes::defaults (static_cast<lucky::Mode> (m));
@@ -68,12 +68,12 @@ LuckyCompProcessor::LuckyCompProcessor()
     startThread (juce::Thread::Priority::low);
 }
 
-LuckyCompProcessor::~LuckyCompProcessor()
+LuckyCompressorProcessor::~LuckyCompressorProcessor()
 {
     stopThread (2000);
 }
 
-void LuckyCompProcessor::run()
+void LuckyCompressorProcessor::run()
 {
     auto lastPredictionMs = 0.0;
     while (! threadShouldExit())
@@ -85,7 +85,7 @@ void LuckyCompProcessor::run()
     }
 }
 
-bool LuckyCompProcessor::updateLevelMatch()
+bool LuckyCompressorProcessor::updateLevelMatch()
 {
     const juce::SpinLock::ScopedTryLockType lock (matchLock);
     if (! lock.isLocked())
@@ -115,7 +115,7 @@ bool LuckyCompProcessor::updateLevelMatch()
     return true;
 }
 
-juce::AudioProcessorValueTreeState::ParameterLayout LuckyCompProcessor::createLayout()
+juce::AudioProcessorValueTreeState::ParameterLayout LuckyCompressorProcessor::createLayout()
 {
     using namespace lucky::modes;
     const auto defaults = lucky::modes::defaults (lucky::Mode::clean);
@@ -153,7 +153,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout LuckyCompProcessor::createLa
     return layout;
 }
 
-void LuckyCompProcessor::prepareToPlay (double sampleRate, int)
+void LuckyCompressorProcessor::prepareToPlay (double sampleRate, int)
 {
     const juce::SpinLock::ScopedLockType lock (matchLock);
     engine.setSettings (getDetectorSettings());
@@ -165,7 +165,7 @@ void LuckyCompProcessor::prepareToPlay (double sampleRate, int)
     rememberedMatch = matchedSettings.has_value();
 }
 
-bool LuckyCompProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool LuckyCompressorProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
     const auto& out = layouts.getMainOutputChannelSet();
     if (out != juce::AudioChannelSet::mono() && out != juce::AudioChannelSet::stereo())
@@ -173,18 +173,18 @@ bool LuckyCompProcessor::isBusesLayoutSupported (const BusesLayout& layouts) con
     return layouts.getMainInputChannelSet() == out;
 }
 
-lucky::Mode LuckyCompProcessor::getMode() const noexcept
+lucky::Mode LuckyCompressorProcessor::getMode() const noexcept
 {
     return static_cast<lucky::Mode> (juce::jlimit (0, lucky::numModes - 1, juce::roundToInt (modeParameter->load())));
 }
 
-lucky::Controls LuckyCompProcessor::getControls() const noexcept
+lucky::Controls LuckyCompressorProcessor::getControls() const noexcept
 {
     return { thresholdParameter->load(), ratioParameter->load(), attackParameter->load(), releaseParameter->load(),
              autoReleaseParameter->load() > 0.5f };
 }
 
-void LuckyCompProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
+void LuckyCompressorProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer&)
 {
     juce::ScopedNoDenormals noDenormals;
     for (auto ch = getTotalNumInputChannels(); ch < getTotalNumOutputChannels(); ++ch)
@@ -205,7 +205,7 @@ void LuckyCompProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::M
     }
 }
 
-void LuckyCompProcessor::setControls (const lucky::Controls& controls)
+void LuckyCompressorProcessor::setControls (const lucky::Controls& controls)
 {
     const auto set = [this] (const juce::String& id, float value)
     {
@@ -221,7 +221,7 @@ void LuckyCompProcessor::setControls (const lucky::Controls& controls)
     set (autoReleaseId, controls.autoRelease ? 1.0f : 0.0f);
 }
 
-void LuckyCompProcessor::switchMode (lucky::Mode mode)
+void LuckyCompressorProcessor::switchMode (lucky::Mode mode)
 {
     const auto current = getMode();
     if (mode == current)
@@ -240,7 +240,7 @@ void LuckyCompProcessor::switchMode (lucky::Mode mode)
     colour->endChangeGesture();
 }
 
-void LuckyCompProcessor::getStateInformation (juce::MemoryBlock& destData)
+void LuckyCompressorProcessor::getStateInformation (juce::MemoryBlock& destData)
 {
     auto state = parameters.copyState();
     state.removeChild (state.getChildWithName (memoryType), nullptr);
@@ -277,7 +277,7 @@ void LuckyCompProcessor::getStateInformation (juce::MemoryBlock& destData)
         copyXmlToBinary (*xml, destData);
 }
 
-void LuckyCompProcessor::setStateInformation (const void* data, int sizeInBytes)
+void LuckyCompressorProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     const auto xml = getXmlFromBinary (data, sizeInBytes);
     if (xml == nullptr || ! xml->hasTagName (parameters.state.getType()))
@@ -323,18 +323,18 @@ void LuckyCompProcessor::setStateInformation (const void* data, int sizeInBytes)
     engine.setUncompressedTarget (juce::Decibels::decibelsToGain (savedUncompressed), true);
 }
 
-void LuckyCompProcessor::playTestHit()
+void LuckyCompressorProcessor::playTestHit()
 {
     const auto rate = getSampleRate() > 0.0 ? getSampleRate() : lucky::example_hit::sampleRate;
     engine.playTestHit (lucky::example_hit::renderHit (getDetectorSettings(), rate, matchParameter->load() > 0.5f, getBlend(), getColour()));
 }
 
-juce::AudioProcessorEditor* LuckyCompProcessor::createEditor()
+juce::AudioProcessorEditor* LuckyCompressorProcessor::createEditor()
 {
-    return new LuckyCompEditor (*this);
+    return new LuckyCompressorEditor (*this);
 }
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new LuckyCompProcessor();
+    return new LuckyCompressorProcessor();
 }

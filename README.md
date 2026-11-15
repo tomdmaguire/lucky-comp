@@ -1,20 +1,20 @@
-# Lucky Comp
+# Lucky Compressor
 
-Compression by ear. Lucky Comp is a free compressor for macOS (VST®3 and AU) that sounds great in a real mix and teaches you how compression works, and how the classic compressors differ, while you use it: four modes in the style of the classics on one set of dials, level matching so you hear the compression rather than the loudness, and a Lab that shows what your settings do to a single snare hit.
+Compression by ear. Lucky Compressor is a free compressor for macOS (VST®3 and AU) that sounds great in a real mix and teaches you how compression works, and how the classic compressors differ, while you use it: four modes in the style of the classics on one set of dials, level matching so you hear the compression rather than the loudness, and a Lab that shows what your settings do to a single snare hit.
 
-**[Website and download](https://tomdmaguire.github.io/lucky-comp/)** · a sibling of [Lucky Seven](https://github.com/tomdmaguire/lucky-seven) and [Lucky Reference](https://github.com/tomdmaguire/lucky-reference) · product spec in [`docs/spec.md`](docs/spec.md)
+**[Website and download](https://tomdmaguire.github.io/lucky-compressor/)** · a sibling of [Lucky Reverb](https://github.com/tomdmaguire/lucky-reverb) and [Lucky Reference](https://github.com/tomdmaguire/lucky-reference) · product spec in [`docs/spec.md`](docs/spec.md)
 
-![Lucky Comp in FET mode on a drum loop: tips at the top, the live view with the gain-reduction line, the Lab with a test snare, and six knobs](docs/assets/fet.png)
+![Lucky Compressor in FET mode on a drum loop: tips at the top, the live view with the gain-reduction line, the Lab with a test snare, and six knobs](docs/assets/fet.png)
 
 ## Install
 
-Download [**Lucky-Comp.pkg**](https://github.com/tomdmaguire/lucky-comp/releases/latest/download/Lucky-Comp.pkg) and open it. It installs the VST3 and the Audio Unit (Apple Silicon and Intel) into `/Library/Audio/Plug-Ins`.
+Download [**Lucky-Compressor.pkg**](https://github.com/tomdmaguire/lucky-compressor/releases/latest/download/Lucky-Compressor.pkg) and open it. It installs the VST3 and the Audio Unit (Apple Silicon and Intel) into `/Library/Audio/Plug-Ins`.
 
-Lucky Comp isn't signed or notarised by Apple (that needs a paid developer account), so macOS won't open the installer the first time. Click **Done**, then go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
+Lucky Compressor isn't signed or notarised by Apple (that needs a paid developer account), so macOS won't open the installer the first time. Click **Done**, then go to **System Settings → Privacy & Security**, scroll down and click **Open Anyway**.
 
-A zip for installing by hand is also on the [releases page](https://github.com/tomdmaguire/lucky-comp/releases/latest); its `INSTALL.txt` explains the steps.
+A zip for installing by hand is also on the [releases page](https://github.com/tomdmaguire/lucky-compressor/releases/latest); its `INSTALL.txt` explains the steps.
 
-**Updating or removing.** The installer replaces the old version. If you ever copied Lucky Comp into `~/Library/Audio/Plug-Ins` by hand, delete those copies so your DAW doesn't load the old one. To remove Lucky Comp, delete `Lucky Comp.vst3` and `Lucky Comp.component` from `/Library/Audio/Plug-Ins/VST3` and `/Library/Audio/Plug-Ins/Components`.
+**Updating or removing.** The installer replaces the old version. If you ever copied Lucky Compressor into `~/Library/Audio/Plug-Ins` by hand, delete those copies so your DAW doesn't load the old one. To remove Lucky Compressor, delete `Lucky Compressor.vst3` and `Lucky Compressor.component` from `/Library/Audio/Plug-Ins/VST3` and `/Library/Audio/Plug-Ins/Components`.
 
 ## Features
 
@@ -29,7 +29,7 @@ A zip for installing by hand is also on the [releases page](https://github.com/t
 - **Window size** from 75% to 200%, and a menu to hide the mode info or the Lab.
 - **Light**: about 0.1 to 0.6% of one core per instance at 48 kHz on an Apple Silicon Mac, the slowest block under 13% of its deadline at a 32-sample buffer, and no latency.
 
-Lucky Comp never goes online.
+Lucky Compressor never goes online.
 
 ## Building
 
@@ -41,20 +41,20 @@ cmake --build build
 ctest --test-dir build
 ```
 
-JUCE is fetched automatically by CMake. The plug-ins are copied into `~/Library/Audio/Plug-Ins` only if you configure with `-DLUCKY_COMP_INSTALL_AFTER_BUILD=ON`. To release, set the version in `CMakeLists.txt` (`project(... VERSION x.y.z)`), rename the changelog's `## Unreleased` section to `## vx.y.z`, then push a tag `vx.y.z`. GitHub Actions checks the three agree, builds, tests, validates the AU, ad-hoc signs and publishes `Lucky-Comp.pkg` and a zip, with that changelog section as the release notes. The release workflow can also be run by hand (Actions → Release → Run workflow) to build the packages without publishing.
+JUCE is fetched automatically by CMake. The plug-ins are copied into `~/Library/Audio/Plug-Ins` only if you configure with `-DLUCKY_COMPRESSOR_INSTALL_AFTER_BUILD=ON`. To release, set the version in `CMakeLists.txt` (`project(... VERSION x.y.z)`), rename the changelog's `## Unreleased` section to `## vx.y.z`, then push a tag `vx.y.z`. GitHub Actions checks the three agree, builds, tests, validates the AU, ad-hoc signs and publishes `Lucky-Compressor.pkg` and a zip, with that changelog section as the release notes. The release workflow can also be run by hand (Actions → Release → Run workflow) to build the packages without publishing.
 
 ### Tools
 
 ```sh
-build/LuckyCompBench [seconds]          # CPU per instance, level-match prediction and Lab timings
-build/LuckyCompSnapshot <scene> out.png # renders the editor (clean, fet, opto, vca, ask, fet-colour, ...)
-build/LuckyCompMeasure_artefacts/Release/LuckyCompMeasure ...  # measures Lucky Comp, or hardware through an audio interface
+build/LuckyCompressorBench [seconds]          # CPU per instance, level-match prediction and Lab timings
+build/LuckyCompressorSnapshot <scene> out.png # renders the editor (clean, fet, opto, vca, ask, fet-colour, ...)
+build/LuckyCompressorMeasure_artefacts/Release/LuckyCompressorMeasure ...  # measures Lucky Compressor, or hardware through an audio interface
 ```
 
-Measurements of our own Behringer 676 and of Lucky Comp are in [`measurements/`](measurements/).
+Measurements of our own Behringer 676 and of Lucky Compressor are in [`measurements/`](measurements/).
 
 ## Licence
 
-Copyright (C) 2026 Tom Maguire. Lucky Comp is free software under the [GNU Affero General Public License v3.0](LICENSE), with no warranty. It is built with [JUCE](https://juce.com), used here under the AGPLv3; the licences of the third-party code it includes are in Lucky Labs' [`THIRD-PARTY-NOTICES.txt`](https://github.com/tomdmaguire/lucky-labs/blob/main/Resources/THIRD-PARTY-NOTICES.txt), which ships with every release. The interface is set in Barlow (SIL Open Font License, in [Lucky Labs](https://github.com/tomdmaguire/lucky-labs/blob/main/Resources/Fonts/OFL.txt)). The test snare is "kensnare1" by spacemanfan on freesound (CC0); see [`Resources/README.md`](Resources/README.md).
+Copyright (C) 2026 Tom Maguire. Lucky Compressor is free software under the [GNU Affero General Public License v3.0](LICENSE), with no warranty. It is built with [JUCE](https://juce.com), used here under the AGPLv3; the licences of the third-party code it includes are in Lucky Labs' [`THIRD-PARTY-NOTICES.txt`](https://github.com/tomdmaguire/lucky-labs/blob/main/Resources/THIRD-PARTY-NOTICES.txt), which ships with every release. The interface is set in Barlow (SIL Open Font License, in [Lucky Labs](https://github.com/tomdmaguire/lucky-labs/blob/main/Resources/Fonts/OFL.txt)). The test snare is "kensnare1" by spacemanfan on freesound (CC0); see [`Resources/README.md`](Resources/README.md).
 
-1176 and LA-2A are trademarks of Universal Audio, Inc.; SSL is a trademark of Solid State Logic; Behringer is a trademark of Music Tribe. Lucky Comp is an independent project, not affiliated with or endorsed by them; the names only describe the style each mode follows. VST is a registered trademark of Steinberg Media Technologies GmbH. Audio Units is a trademark of Apple Inc. Other product names are trademarks of their owners.
+1176 and LA-2A are trademarks of Universal Audio, Inc.; SSL is a trademark of Solid State Logic; Behringer is a trademark of Music Tribe. Lucky Compressor is an independent project, not affiliated with or endorsed by them; the names only describe the style each mode follows. VST is a registered trademark of Steinberg Media Technologies GmbH. Audio Units is a trademark of Apple Inc. Other product names are trademarks of their owners.

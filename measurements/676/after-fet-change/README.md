@@ -1,4 +1,4 @@
-# Lucky Comp FET after the 676-based colour change
+# Lucky Compressor FET after the 676-based colour change
 
 The same settings as the `../lucky-*-c0` runs, on the build with the FET compressing harmonics from `docs/676-comparison.md`
 applied: Mode FET, Level match off, Mix 100%, Colour 1× (`@0.5`) or 0, and

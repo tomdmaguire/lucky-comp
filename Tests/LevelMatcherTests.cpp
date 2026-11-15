@@ -9,7 +9,7 @@ namespace lucky
 class LevelMatcherTests final : public juce::UnitTest
 {
 public:
-    LevelMatcherTests() : juce::UnitTest ("Level matcher", "Lucky Comp") {}
+    LevelMatcherTests() : juce::UnitTest ("Level matcher", "Lucky Compressor") {}
 
     static constexpr double rate = 48000.0;
 

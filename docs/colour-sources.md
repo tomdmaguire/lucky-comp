@@ -1,6 +1,6 @@
 # Colour: sources
 
-Lucky Comp's Colour is voiced from published specifications and published measurements of **hardware** units. No
+Lucky Compressor's Colour is voiced from published specifications and published measurements of **hardware** units. No
 figure here comes from a software plugin. Levels in dBu are converted with 0 dBFS = +18 dBu (EBU R68), so 0 dBu is
 −18 dBFS.
 
@@ -68,14 +68,14 @@ figure here comes from a software plugin. Levels in dBu are converted with 0 dBF
   https://solidstatelogic.com/assets/uploads/downloads/The_Bus_User_Guide_1.1.pdf
 - **SSL XLogic G Comp manual**: frequency response ±0.2 dB (−3 dB at 100 kHz); THD+N typically 0.005 % with the
   compressor out. https://www.solidstatelogic.com/assets/uploads/downloads/g-series-stereo-compressor/XLogic_G-Comp.pdf
-- **Checked against Lucky Comp's own detector** (VCA mode, +4 dBu sine, 10:1, 0.1 ms, 0.1 s, about 10 dB of
+- **Checked against Lucky Compressor's own detector** (VCA mode, +4 dBu sine, 10:1, 0.1 ms, 0.1 s, about 10 dB of
   reduction): 3.4 % at 20 Hz, 0.8 % at 100 Hz, 0.4 % at 200 Hz, 0.08 % at 1 kHz, all third harmonic. The detector
   already makes SSL's low-frequency distortion, so the colour stage adds only the chip's static part.
 - **Later:** B. R. Thompson and M. C. Heilemann, "SSL Bus Compressor Control Voltage Dataset", University of
   Rochester, 2026, CC BY 4.0, https://doi.org/10.60593/ur.d.31892026 (real G384 hardware; paper accepted to DAFx
   2026). Not released yet; its calibration signals could check the VCA against a real unit.
 
-## What Lucky Comp uses (Colour at 1×)
+## What Lucky Compressor uses (Colour at 1×)
 
 | | Below threshold | While compressing | EQ |
 |---|---|---|---|
@@ -92,7 +92,7 @@ colour stage doesn't. Units vary a lot; these are typical values, and the Colour
   after the change (`measurements/676/after-fet-change/`): at 1 kHz, slow release, Ratio 4, H2 within 1.4 dB of the
   676 from 2 to 11 dB of reduction and H3 within 2 dB to 10 dB (6 dB low on H2 at 1 dB, where the ramp-in is gentler);
   Moore's point gives 0.161% THD (Moore 0.16%, 676 0.166%). At 100 Hz the 676 has more H2 and H3 (its transformers;
-  Moore saw none on a real 1176), so Lucky Comp sits 4–20 dB below it there.
+  Moore saw none on a real 1176), so Lucky Compressor sits 4–20 dB below it there.
 - **Opto, between published points (assumptions):** while compressing, H3 grows in proportion to reduction from 0
   to 6 dB and holds at −36 dBc above 6 dB. No published figure covers either; we have no LA-2A-style hardware to
   check them.

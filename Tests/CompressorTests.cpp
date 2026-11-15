@@ -8,7 +8,7 @@ namespace lucky
 class CompressorTests final : public juce::UnitTest
 {
 public:
-    CompressorTests() : juce::UnitTest ("Compressor", "Lucky Comp") {}
+    CompressorTests() : juce::UnitTest ("Compressor", "Lucky Compressor") {}
 
     static constexpr double rate = 48000.0;
 

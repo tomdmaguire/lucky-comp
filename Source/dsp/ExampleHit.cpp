@@ -1,6 +1,6 @@
 #include "ExampleHit.h"
 #include "Compressor.h"
-#include "LuckyCompSamples.h"
+#include "LuckyCompressorSamples.h"
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
@@ -99,7 +99,7 @@ std::vector<float> resample (const std::vector<float>& in, double from, double t
 std::vector<float> makeHit (double rate)
 {
     static std::mutex mutex;
-    static const auto source = decodeWav (LuckyCompSamples::TestSnare_wav, static_cast<size_t> (LuckyCompSamples::TestSnare_wavSize));
+    static const auto source = decodeWav (LuckyCompressorSamples::TestSnare_wav, static_cast<size_t> (LuckyCompressorSamples::TestSnare_wavSize));
     static std::vector<Sound> cached;
     const std::scoped_lock lock (mutex);
 

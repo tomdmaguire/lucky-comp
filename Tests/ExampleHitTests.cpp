@@ -9,7 +9,7 @@ namespace lucky
 class ExampleHitTests final : public juce::UnitTest
 {
 public:
-    ExampleHitTests() : juce::UnitTest ("Example hit", "Lucky Comp") {}
+    ExampleHitTests() : juce::UnitTest ("Example hit", "Lucky Compressor") {}
 
     /** Loudest output in the first few milliseconds of the hit, in dB. */
     static float frontPeakDb (const HitTrace& trace)

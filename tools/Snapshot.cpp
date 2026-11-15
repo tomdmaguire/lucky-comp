@@ -11,14 +11,14 @@ namespace
 constexpr double rate = 48000.0;
 constexpr int blockSize = 512;
 
-void setParameter (LuckyCompProcessor& processor, const juce::String& id, float value)
+void setParameter (LuckyCompressorProcessor& processor, const juce::String& id, float value)
 {
     auto* parameter = processor.getParameters().getParameter (id);
     parameter->setValueNotifyingHost (parameter->convertTo0to1 (value));
 }
 
 /** Plays a few seconds of the drum loop through the processor so the live view has something to show. */
-void play (LuckyCompProcessor& processor, double seconds)
+void play (LuckyCompressorProcessor& processor, double seconds)
 {
     auto loop = lucky::test::drumLoop (rate, static_cast<int> (std::ceil (seconds / 3.33)));
     juce::MidiBuffer midi;
@@ -30,12 +30,12 @@ void play (LuckyCompProcessor& processor, double seconds)
 }
 } // namespace
 
-/** Renders the editor to a PNG: LuckyCompSnapshot <clean|fet|opto|vca|vca-auto|empty|notips|gr|ask|fet-colour|opto-colour|vca-colour|vca-colour10|nolab|parallel|blend|fet-compare|new> <output.png> */
+/** Renders the editor to a PNG: LuckyCompressorSnapshot <clean|fet|opto|vca|vca-auto|empty|notips|gr|ask|fet-colour|opto-colour|vca-colour|vca-colour10|nolab|parallel|blend|fet-compare|new> <output.png> */
 int main (int argc, char** argv)
 {
     if (argc < 3)
     {
-        std::cerr << "usage: LuckyCompSnapshot <clean|fet|opto|vca|vca-auto|empty|notips|gr|ask|fet-colour|opto-colour|vca-colour|vca-colour10|nolab|parallel|blend|fet-compare|new> <output.png>\n";
+        std::cerr << "usage: LuckyCompressorSnapshot <clean|fet|opto|vca|vca-auto|empty|notips|gr|ask|fet-colour|opto-colour|vca-colour|vca-colour10|nolab|parallel|blend|fet-compare|new> <output.png>\n";
         return 1;
     }
 
@@ -43,7 +43,7 @@ int main (int argc, char** argv)
     const juce::String scene (argv[1]);
     const juce::File output (juce::File::getCurrentWorkingDirectory().getChildFile (argv[2]));
 
-    std::unique_ptr<LuckyCompProcessor> processor (dynamic_cast<LuckyCompProcessor*> (createPluginFilter()));
+    std::unique_ptr<LuckyCompressorProcessor> processor (dynamic_cast<LuckyCompressorProcessor*> (createPluginFilter()));
     processor->setPlayConfigDetails (2, 2, rate, blockSize);
     processor->prepareToPlay (rate, blockSize);
 
@@ -56,23 +56,23 @@ int main (int argc, char** argv)
     if (! scene.startsWith ("new"))
     {
         const std::array<float, lucky::numModes> working { -24.0f, -20.0f, -20.0f, -18.0f };
-        setParameter (*processor, LuckyCompProcessor::thresholdId, working[static_cast<size_t> (processor->getMode())]);
+        setParameter (*processor, LuckyCompressorProcessor::thresholdId, working[static_cast<size_t> (processor->getMode())]);
     }
     if (scene == "vca-auto")
-        setParameter (*processor, LuckyCompProcessor::autoReleaseId, 1.0f);
+        setParameter (*processor, LuckyCompressorProcessor::autoReleaseId, 1.0f);
     if (scene == "parallel")
-        setParameter (*processor, LuckyCompProcessor::mixId, 50.0f);
+        setParameter (*processor, LuckyCompressorProcessor::mixId, 50.0f);
     if (scene == "fet-colour" || scene == "opto-colour")
-        setParameter (*processor, LuckyCompProcessor::colourId, 500.0f);
+        setParameter (*processor, LuckyCompressorProcessor::colourId, 500.0f);
     if (scene == "vca-colour10")
-        setParameter (*processor, LuckyCompProcessor::colourId, 1000.0f);
+        setParameter (*processor, LuckyCompressorProcessor::colourId, 1000.0f);
     if (scene == "blend")
-        setParameter (*processor, LuckyCompProcessor::mixModeId, 1.0f);
+        setParameter (*processor, LuckyCompressorProcessor::mixModeId, 1.0f);
 
     if (scene != "empty")
         play (*processor, 8.0);
     if (scene.endsWith ("compare"))
-        setParameter (*processor, LuckyCompProcessor::bypassId, 1.0f);
+        setParameter (*processor, LuckyCompressorProcessor::bypassId, 1.0f);
 
     juce::SharedResourcePointer<lucky::Settings> settings;
     const auto tipsBefore = settings->getBool ("showTips", true);
@@ -82,8 +82,8 @@ int main (int argc, char** argv)
     settings->setBool ("showTips", scene != "notips");
     settings->setBool ("showGainReduction", scene == "gr");
 
-    auto editor = std::make_unique<LuckyCompEditor> (*processor);
-    editor->setSize (LuckyCompView::baseWidth, LuckyCompView::baseHeight);
+    auto editor = std::make_unique<LuckyCompressorEditor> (*processor);
+    editor->setSize (LuckyCompressorView::baseWidth, LuckyCompressorView::baseHeight);
     editor->getView().sync();
     std::unique_ptr<lucky::RevealPrompt> prompt;
     std::unique_ptr<juce::CallOutBox> callout;

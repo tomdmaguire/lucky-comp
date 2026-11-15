@@ -10,7 +10,7 @@ namespace lucky
 class ColourTests final : public juce::UnitTest
 {
 public:
-    ColourTests() : juce::UnitTest ("Colour", "Lucky Comp") {}
+    ColourTests() : juce::UnitTest ("Colour", "Lucky Compressor") {}
 
     static constexpr double rate = 48000.0;
 

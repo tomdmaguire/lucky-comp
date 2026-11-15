@@ -7,7 +7,7 @@ namespace lucky
 class ModesTests final : public juce::UnitTest
 {
 public:
-    ModesTests() : juce::UnitTest ("Modes", "Lucky Comp") {}
+    ModesTests() : juce::UnitTest ("Modes", "Lucky Compressor") {}
 
     void runTest() override
     {

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lucky Comp Chain</title>
+<title>Lucky Compressor Chain</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -309,7 +309,7 @@ function render() {
   const specs = knobSpecs(s);
   const mixSpec = { key: "mix", label: "Mix", min: 0, max: 100, log: false, text: v => Math.round(v) + "%", cap: v => v >= 99.5 ? "" : "Parallel" };
   app.innerHTML = `
-    <div class="topbar"><div class="logo"><div class="glyph"></div><span>LUCKY COMP</span></div>${top}
+    <div class="topbar"><div class="logo"><div class="glyph"></div><span>LUCKY COMPRESSOR</span></div>${top}
       <div class="bypass label">Bypass <span class="key">B</span></div><div class="menu">•••</div></div>
     <div class="tips"><div class="a">${tip1}</div><div>${tip2}</div></div>
     <div class="views">

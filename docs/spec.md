@@ -1,4 +1,4 @@
-# Lucky Comp: v1 spec
+# Lucky Compressor: v1 spec
 
 A compressor that is good enough for real mixes and teaches you to hear compression while you use it.
 
@@ -10,7 +10,7 @@ The agreed look and behaviour come from the browser prototype in `prototype/inde
 - Teaches by ear first: the comparison is level-matched, so what changes is the shape of the sound, not its loudness.
 - Shows what the settings do, on the audio passing through and on an example hit.
 - Behaviour, not a circuit clone. The classic modes copy how each compressor reacts (timing, ratio, knee, program-dependent release), not its exact tone. It has to sound good; it doesn't have to null against the hardware.
-- A sibling of Lucky Seven and Lucky Reference: same visual family, few controls, done well.
+- A sibling of Lucky Reverb and Lucky Reference: same visual family, few controls, done well.
 
 ## Signal flow
 
@@ -39,7 +39,7 @@ in ─┬─ detector (stereo linked peak) → gain computer → smoothing (mode
 | `bypass` | Compare with uncompressed | off/on | off | Hear the input without compression (ID kept from when it was Bypass) |
 | `match` | Level match | off/on | on | |
 | `mix` | Mix | 0 to 100% | 100% | Mix mode: crossfade, % compressed |
-| `mixMode` | Mix mode | Mix, Blend | Mix | As Lucky Seven's output tabs |
+| `mixMode` | Mix mode | Mix, Blend | Mix | As Lucky Reverb's output tabs |
 | `blend` | Blend | −∞ (−60) to +6 dB | −12 dB | Blend mode: dry stays at 0 dB, compressed added at this level |
 
 All values are stored in real units (dB, ms), so automation means the same thing in every mode. Each mode then constrains them (next section). Mix and Blend are shared by every mode (not remembered per mode): parallel compression is how you use a compressor, not part of the classic, and keeping it fixed means switching modes changes only the compressor. It was left out at first, then added back: parallel compression is something newcomers learn and need to try.
@@ -105,7 +105,7 @@ On by default. Turns the compressed signal up so it is as loud as the input, so 
 
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
-│ ▣ LUCKY COMP     │   ● CLEAN    ● FET    ● OPTO    ● VCA        │  •••   │ top bar
+│ ▣ LUCKY COMPRESSOR     │   ● CLEAN    ● FET    ● OPTO    ● VCA        │  •••   │ top bar
 ├──────────────────────────────────────────────────────────────────────────┤
 │ tip: what this mode is and what it's good for (one line)    [C] COMPARE...│ mode info (optional)
 ├───────────────────────────────────────────────┬──────────────────────────┤
@@ -120,7 +120,7 @@ On by default. Turns the compressed signal up so it is as loud as the input, so 
 ```
 
 - **Colours:** each mode has a colour from the Lucky palette (Clean gold `#d6b785`, FET pink `#d685be`, Opto green `#85d68f`, VCA blue `#85aad6`). Tabs carry a dot in their colour; the selected mode tints the knobs, waveforms and switches.
-- **Knobs:** Lucky Seven's knob style. Drag vertically, Shift for fine, double-click to reset, wheel. Value in the middle, a caption underneath (e.g. "Dial 3.0" under FET attack, "= threshold −18 dB" under Input). While Attack or Release is held, the caption adds one word on what the value does: attack Flattens (under 0.5 ms), Tight (under 5 ms), Punchy (under 25 ms) or Gentle; release Fast (under 80 ms), Natural (under 400 ms) or Glued (e.g. "Dial 3.0 · Flattens"). Only while held: shown all the time, the words read as labels for something else.
+- **Knobs:** Lucky Reverb's knob style. Drag vertically, Shift for fine, double-click to reset, wheel. Value in the middle, a caption underneath (e.g. "Dial 3.0" under FET attack, "= threshold −18 dB" under Input). While Attack or Release is held, the caption adds one word on what the value does: attack Flattens (under 0.5 ms), Tight (under 5 ms), Punchy (under 25 ms) or Gentle; release Fast (under 80 ms), Natural (under 400 ms) or Glued (e.g. "Dial 3.0 · Flattens"). Only while held: shown all the time, the words read as labels for something else.
   - Attack (10 µs to 100 ms), Release (5 ms to 5 s) and Ratio (1:1 to 20:1) keep one log scale in every mode, labelled at the ends of the ring. Each mode lights up only the stretch it can reach (FET attack: the first ~40%), so modes can be compared on the same dial. Switched controls (VCA, FET ratio) show their positions as dots and click between them; VCA Auto sits one position past 1.2 s.
   - Fixed controls (Opto ratio and attack) draw dimmed with a dotted ring, value shown, not draggable.
   - Opto release is display-only and moves on its own to show the current slow release time, captioned "Follows the music".
@@ -134,7 +134,7 @@ On by default. Turns the compressed signal up so it is as loud as the input, so 
 - **Test snare:** "▶ TEST SNARE [S]" in the Lab's corner, or S, plays the test snare exactly as the Lab shows it: rendered with the current settings at the host rate, level-matched to the raw snare when Level match is on, and capped at −1 dBFS. It has its own path added to the output, so it never touches your audio's compression, meters or level match. C plays the raw snare instead, like everything else. An ⓘ next to LAB explains the Lab in its tooltip. Not MIDI: Live doesn't route MIDI to audio effects without workarounds.
 - **••• menu:** version, Window size, Compare with uncompressed (C), Show mode info, Show Lab (hidden, the live view takes the full width; remembered), Ask before showing GR.
 - **Compare with uncompressed:** not called Bypass, because with level match it isn't one: it plays your sound without compression at the same loudness. In the ••• menu with C as its shortcut, and a clickable [C] COMPARE WITH UNCOMPRESSED hint (`lucky::KeyHintButton`) at the right of the mode info line. While on, every accent (logo, mode dots and underline, waveforms, knobs, switches) turns grey and a `lucky::ToggleNotice` over the live view says "HEARING IT UNCOMPRESSED", "Your sound without compression, at the same loudness." (without "at the same loudness" when Level match is off), "Press [C] to switch back and forth", with a Back to compressed button for hosts that keep key presses. It never mentions being turned down: there is enough about levels already. C, the hint, the menu, the button, or picking any mode turns it off again. The (i) and the mode info stay short on purpose.
-- **Strip:** six knobs: Threshold, Ratio, Attack, Release, Colour, and the output knob, whose label is replaced by MIX | BLEND tabs (`lucky::LabelTabs`, as on Lucky Seven). MIX: 0 to 100%, "Dry" to "Comp", a linear crossfade (dry and compressed are in phase, so no equal-power law), caption "Parallel" in between. BLEND: the dry signal stays at 0 dB and the knob adds the compressed one from −∞ to +6 dB (Lucky Seven's range and skew), caption "Dry stays at 0 dB": New York style parallel compression. Drawn in white rather than the mode colour: Mix and Blend are shared by every mode, while the other knobs are remembered per mode.
+- **Strip:** six knobs: Threshold, Ratio, Attack, Release, Colour, and the output knob, whose label is replaced by MIX | BLEND tabs (`lucky::LabelTabs`, as on Lucky Reverb). MIX: 0 to 100%, "Dry" to "Comp", a linear crossfade (dry and compressed are in phase, so no equal-power law), caption "Parallel" in between. BLEND: the dry signal stays at 0 dB and the knob adds the compressed one from −∞ to +6 dB (Lucky Reverb's range and skew), caption "Dry stays at 0 dB": New York style parallel compression. Drawn in white rather than the mode colour: Mix and Blend are shared by every mode, while the other knobs are remembered per mode.
 
 ## Colour
 
@@ -157,7 +157,7 @@ are redesigned per amount). 1× is captioned
 
 ## Performance
 
-`LuckyCompBench` (48 kHz, stereo, Colour 1×, Mix 60%, level match on, Apple Silicon): 0.1% (Clean) to 0.6% (FET) of
+`LuckyCompressorBench` (48 kHz, stereo, Colour 1×, Mix 60%, level match on, Apple Silicon): 0.1% (Clean) to 0.6% (FET) of
 one core per instance at any buffer size; the slowest block under 13% of its deadline at 32 samples. A level-match
 prediction (one replay of the 3 s history for both make-up gains) takes about 4.7 ms on the background thread, which
 re-predicts every 15 ms while a setting changes and otherwise idles. The Lab's simulation takes about 7 ms on the

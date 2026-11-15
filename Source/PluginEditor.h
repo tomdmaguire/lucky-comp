@@ -6,14 +6,14 @@
 #include "ui/ModeColours.h"
 
 /** The editor's content at its base size; the editor scales it to the window. */
-class LuckyCompView final : public juce::Component,
+class LuckyCompressorView final : public juce::Component,
                             private juce::Timer
 {
 public:
     static constexpr int baseWidth = 900;
     static constexpr int baseHeight = 600;
 
-    explicit LuckyCompView (LuckyCompProcessor&);
+    explicit LuckyCompressorView (LuckyCompressorProcessor&);
 
     /** Adds the editor's Window size items to the ••• menu. */
     std::function<void (juce::PopupMenu&)> addWindowSizeMenu;
@@ -72,7 +72,7 @@ private:
     juce::Rectangle<int> tipsArea() const;
     juce::Rectangle<int> stripArea() const;
 
-    LuckyCompProcessor& owner;
+    LuckyCompressorProcessor& owner;
     juce::SharedResourcePointer<lucky::Settings> settings;
     std::array<std::unique_ptr<ModeTab>, lucky::numModes> tabs;
     juce::DrawableButton menuButton { "Menu", juce::DrawableButton::ImageFitted };
@@ -84,7 +84,7 @@ private:
     lucky::KeyHintButton compareHint { "C", "Compare with uncompressed" };
     lucky::ToggleNotice compareNotice { "Hearing it uncompressed", "C", "Back to compressed" };
     lucky::SmallSwitch matchSwitch { "LEVEL MATCH" };
-    lucky::LabelTabs mixTabs { LuckyCompProcessor::mixModes };
+    lucky::LabelTabs mixTabs { LuckyCompressorProcessor::mixModes };
     std::optional<bool> shownBlendMode;
     juce::TooltipWindow tooltips { this, 500 };
     std::optional<lucky::Mode> shownMode;
@@ -94,19 +94,19 @@ private:
         give it, and asking forever would keep pulling their window to the front. */
     int focusTriesLeft = 30;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LuckyCompView)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LuckyCompressorView)
 };
 
-class LuckyCompEditor final : public lucky::ScaledEditor
+class LuckyCompressorEditor final : public lucky::ScaledEditor
 {
 public:
-    explicit LuckyCompEditor (LuckyCompProcessor&);
+    explicit LuckyCompressorEditor (LuckyCompressorProcessor&);
 
     /** The view at base size, for snapshots. */
-    LuckyCompView& getView() noexcept { return view; }
+    LuckyCompressorView& getView() noexcept { return view; }
 
 private:
-    LuckyCompView view;
+    LuckyCompressorView view;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LuckyCompEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (LuckyCompressorEditor)
 };

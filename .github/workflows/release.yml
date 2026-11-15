@@ -44,7 +44,7 @@ jobs:
         run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLUCKY_LABS_DIR="$GITHUB_WORKSPACE/lucky-labs"
 
       - name: Build plugins and tests
-        run: cmake --build build --target LuckyComp_VST3 LuckyComp_AU LuckyCompTests LuckyCompProcessorTests
+        run: cmake --build build --target LuckyCompressor_VST3 LuckyCompressor_AU LuckyCompressorTests LuckyCompressorProcessorTests
 
       - name: Test
         run: ctest --test-dir build --output-on-failure
@@ -52,7 +52,7 @@ jobs:
       - name: Validate the Audio Unit
         run: |
           mkdir -p ~/Library/Audio/Plug-Ins/Components
-          cp -R "build/LuckyComp_artefacts/Release/AU/Lucky Comp.component" ~/Library/Audio/Plug-Ins/Components/
+          cp -R "build/LuckyCompressor_artefacts/Release/AU/Lucky Compressor.component" ~/Library/Audio/Plug-Ins/Components/
           killall -9 AudioComponentRegistrar || true
           auval -v aufx Lcmp Lcky
 
@@ -61,33 +61,33 @@ jobs:
           set -euo pipefail
           version="${GITHUB_REF_NAME}"
           [[ "$version" == v* ]] || version="v0.0.0-test"
-          artefacts="build/LuckyComp_artefacts/Release"
-          package="Lucky-Comp-$version-macOS"
+          artefacts="build/LuckyCompressor_artefacts/Release"
+          package="Lucky-Compressor-$version-macOS"
           mkdir -p "dist/$package"
-          cp -R "$artefacts/VST3/Lucky Comp.vst3" "dist/$package/"
-          cp -R "$artefacts/AU/Lucky Comp.component" "dist/$package/"
-          for bundle in "dist/$package/Lucky Comp.vst3" "dist/$package/Lucky Comp.component"; do
+          cp -R "$artefacts/VST3/Lucky Compressor.vst3" "dist/$package/"
+          cp -R "$artefacts/AU/Lucky Compressor.component" "dist/$package/"
+          for bundle in "dist/$package/Lucky Compressor.vst3" "dist/$package/Lucky Compressor.component"; do
             mkdir -p "$bundle/Contents/Resources"
             cp LICENSE "$bundle/Contents/Resources/LICENSE.txt"
             cp lucky-labs/Resources/THIRD-PARTY-NOTICES.txt "$bundle/Contents/Resources/THIRD-PARTY-NOTICES.txt"
           done
-          codesign --force --deep --sign - "dist/$package/Lucky Comp.vst3"
-          codesign --force --deep --sign - "dist/$package/Lucky Comp.component"
+          codesign --force --deep --sign - "dist/$package/Lucky Compressor.vst3"
+          codesign --force --deep --sign - "dist/$package/Lucky Compressor.component"
           cp README.md CHANGELOG.md LICENSE "dist/$package/"
           cp lucky-labs/Resources/THIRD-PARTY-NOTICES.txt "dist/$package/THIRD-PARTY-NOTICES.txt"
           cp lucky-labs/Resources/Fonts/OFL.txt "dist/$package/Barlow-OFL.txt"
           cp Resources/README.md "dist/$package/Test-snare-credit.md"
           cp packaging/INSTALL.txt "dist/$package/INSTALL.txt"
           (cd dist && ditto -c -k --keepParent "$package" "$package.zip")
-          packaging/build-pkg.sh "${version#v}" "dist/$package/Lucky Comp.vst3" "dist/$package/Lucky Comp.component" "dist/Lucky-Comp.pkg"
+          packaging/build-pkg.sh "${version#v}" "dist/$package/Lucky Compressor.vst3" "dist/$package/Lucky Compressor.component" "dist/Lucky-Compressor.pkg"
           awk -v heading="## $version" '$0 == heading { found = 1; next } /^## / { found = 0 } found' CHANGELOG.md > dist/notes.md
 
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dist
           path: |
-            dist/Lucky-Comp.pkg
-            dist/Lucky-Comp-*-macOS.zip
+            dist/Lucky-Compressor.pkg
+            dist/Lucky-Compressor-*-macOS.zip
             dist/notes.md
           if-no-files-found: error
 
@@ -107,7 +107,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" "dist/Lucky-Comp.pkg" "dist/Lucky-Comp-$GITHUB_REF_NAME-macOS.zip" \
+          gh release create "$GITHUB_REF_NAME" "dist/Lucky-Compressor.pkg" "dist/Lucky-Compressor-$GITHUB_REF_NAME-macOS.zip" \
             --repo "$GITHUB_REPOSITORY" \
-            --title "Lucky Comp $GITHUB_REF_NAME" \
+            --title "Lucky Compressor $GITHUB_REF_NAME" \
             --notes-file dist/notes.md

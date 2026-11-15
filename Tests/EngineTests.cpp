@@ -8,7 +8,7 @@ namespace lucky
 class EngineTests final : public juce::UnitTest
 {
 public:
-    EngineTests() : juce::UnitTest ("Engine", "Lucky Comp") {}
+    EngineTests() : juce::UnitTest ("Engine", "Lucky Compressor") {}
 
     static constexpr double rate = 48000.0;
     static constexpr int blockSize = 512;

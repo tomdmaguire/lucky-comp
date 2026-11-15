@@ -235,7 +235,7 @@ Knob::Spec blendSpec (const juce::RangedAudioParameter& blend)
     spec.defaultValue = -12.0f;
     spec.startLabel = format::minus + juce::String (juce::CharPointer_UTF8 ("\xe2\x88\x9e"));
     spec.endLabel = "+6 dB";
-    spec.text = [] (float db) { return db <= LuckyCompProcessor::blendSilentDb ? format::minus + juce::String (juce::CharPointer_UTF8 ("\xe2\x88\x9e")) + " dB" : format::decibels (db); };
+    spec.text = [] (float db) { return db <= LuckyCompressorProcessor::blendSilentDb ? format::minus + juce::String (juce::CharPointer_UTF8 ("\xe2\x88\x9e")) + " dB" : format::decibels (db); };
     spec.caption = [] (float) { return juce::String ("Dry stays at 0 dB"); };
     return spec;
 }
@@ -293,13 +293,13 @@ Knob::Spec colourSpec (Mode mode)
 
 } // namespace
 
-LuckyCompView::ModeTab::ModeTab (Mode m) : juce::Button (modes::name (m)), mode (m)
+LuckyCompressorView::ModeTab::ModeTab (Mode m) : juce::Button (modes::name (m)), mode (m)
 {
     setWantsKeyboardFocus (false);
     setMouseCursor (juce::MouseCursor::PointingHandCursor);
 }
 
-void LuckyCompView::ModeTab::paintButton (juce::Graphics& g, bool isMouseOver, bool)
+void LuckyCompressorView::ModeTab::paintButton (juce::Graphics& g, bool isMouseOver, bool)
 {
     const auto bounds = getLocalBounds().toFloat();
     const auto selected = getToggleState();
@@ -326,7 +326,7 @@ void LuckyCompView::ModeTab::paintButton (juce::Graphics& g, bool isMouseOver, b
     }
 }
 
-LuckyCompView::LuckyCompView (LuckyCompProcessor& processor)
+LuckyCompressorView::LuckyCompressorView (LuckyCompressorProcessor& processor)
     : owner (processor),
       liveView (processor.getEngine(), [&processor] { return processor.getSampleRate(); })
 {
@@ -363,7 +363,7 @@ LuckyCompView::LuckyCompView (LuckyCompProcessor& processor)
             if (control == colour)
                 hitView.holdColour (true);
             if (control == release)
-                owner.getParameters().getParameter (LuckyCompProcessor::autoReleaseId)->beginChangeGesture();
+                owner.getParameters().getParameter (LuckyCompressorProcessor::autoReleaseId)->beginChangeGesture();
         };
         knob.onGestureEnd = [this, control]
         {
@@ -374,7 +374,7 @@ LuckyCompView::LuckyCompView (LuckyCompProcessor& processor)
             if (control == colour)
                 hitView.holdColour (false);
             if (control == release)
-                owner.getParameters().getParameter (LuckyCompProcessor::autoReleaseId)->endChangeGesture();
+                owner.getParameters().getParameter (LuckyCompressorProcessor::autoReleaseId)->endChangeGesture();
         };
         knob.onChange = [this, control] (float value)
         {
@@ -393,7 +393,7 @@ LuckyCompView::LuckyCompView (LuckyCompProcessor& processor)
     mixTabs.onChoose = [this] (int index)
     {
         grabKeyboardFocus();
-        setParameter (LuckyCompProcessor::mixModeId, static_cast<float> (index));
+        setParameter (LuckyCompressorProcessor::mixModeId, static_cast<float> (index));
         sync();
     };
     addAndMakeVisible (mixTabs);
@@ -416,7 +416,7 @@ LuckyCompView::LuckyCompView (LuckyCompProcessor& processor)
     matchSwitch.onToggle = [this] (bool on)
     {
         grabKeyboardFocus();
-        setParameter (LuckyCompProcessor::matchId, on ? 1.0f : 0.0f);
+        setParameter (LuckyCompressorProcessor::matchId, on ? 1.0f : 0.0f);
     };
     addAndMakeVisible (matchSwitch);
 
@@ -437,7 +437,7 @@ LuckyCompView::LuckyCompView (LuckyCompProcessor& processor)
     startTimerHz (30);
 }
 
-void LuckyCompView::setParameter (const juce::String& id, float value)
+void LuckyCompressorView::setParameter (const juce::String& id, float value)
 {
     auto* parameter = owner.getParameters().getParameter (id);
     parameter->beginChangeGesture();
@@ -445,13 +445,13 @@ void LuckyCompView::setParameter (const juce::String& id, float value)
     parameter->endChangeGesture();
 }
 
-void LuckyCompView::setComparing (bool on)
+void LuckyCompressorView::setComparing (bool on)
 {
-    setParameter (LuckyCompProcessor::bypassId, on ? 1.0f : 0.0f);
+    setParameter (LuckyCompressorProcessor::bypassId, on ? 1.0f : 0.0f);
     sync();
 }
 
-void LuckyCompView::setKnobValue (Control control, float value)
+void LuckyCompressorView::setKnobValue (Control control, float value)
 {
     const auto set = [this] (const juce::String& id, float v)
     {
@@ -461,9 +461,9 @@ void LuckyCompView::setKnobValue (Control control, float value)
 
     if (control == release)
     {
-        set (LuckyCompProcessor::autoReleaseId, value < 0.0f ? 1.0f : 0.0f);
+        set (LuckyCompressorProcessor::autoReleaseId, value < 0.0f ? 1.0f : 0.0f);
         if (value >= 0.0f)
-            set (LuckyCompProcessor::releaseId, value);
+            set (LuckyCompressorProcessor::releaseId, value);
     }
     else if (control != numControls)
     {
@@ -472,28 +472,28 @@ void LuckyCompView::setKnobValue (Control control, float value)
     sync();
 }
 
-juce::String LuckyCompView::parameterIdFor (Control control) const
+juce::String LuckyCompressorView::parameterIdFor (Control control) const
 {
     switch (control)
     {
-        case amount: return LuckyCompProcessor::thresholdId;
-        case ratio: return LuckyCompProcessor::ratioId;
-        case attack: return LuckyCompProcessor::attackId;
-        case release: return LuckyCompProcessor::releaseId;
-        case colour: return LuckyCompProcessor::colourId;
-        case mix: return owner.isBlendMode() ? LuckyCompProcessor::blendId : LuckyCompProcessor::mixId;
+        case amount: return LuckyCompressorProcessor::thresholdId;
+        case ratio: return LuckyCompressorProcessor::ratioId;
+        case attack: return LuckyCompressorProcessor::attackId;
+        case release: return LuckyCompressorProcessor::releaseId;
+        case colour: return LuckyCompressorProcessor::colourId;
+        case mix: return owner.isBlendMode() ? LuckyCompressorProcessor::blendId : LuckyCompressorProcessor::mixId;
         case numControls: break;
     }
     return {};
 }
 
-float LuckyCompView::releaseSeconds() const
+float LuckyCompressorView::releaseSeconds() const
 {
     const auto& engine = owner.getEngine();
     return engine.isHearingAudio() ? engine.getReleaseSeconds() : hitView.getReleaseSeconds();
 }
 
-void LuckyCompView::applyMode (Mode mode)
+void LuckyCompressorView::applyMode (Mode mode)
 {
     shownMode = mode;
     for (auto& tab : tabs)
@@ -515,12 +515,12 @@ void LuckyCompView::applyMode (Mode mode)
     applyAccent();
 }
 
-juce::Colour LuckyCompView::accent() const
+juce::Colour LuckyCompressorView::accent() const
 {
     return comparing ? lucky::theme::greyedOut : lucky::theme::modeColour (shownMode.value_or (Mode::clean));
 }
 
-void LuckyCompView::applyAccent()
+void LuckyCompressorView::applyAccent()
 {
     const auto colourNow = accent();
     const auto shared = comparing ? lucky::theme::greyedOut : lucky::theme::text;
@@ -540,7 +540,7 @@ void LuckyCompView::applyAccent()
     repaint();
 }
 
-void LuckyCompView::sync()
+void LuckyCompressorView::sync()
 {
     const auto mode = owner.getMode();
     if (shownMode != mode)
@@ -549,15 +549,15 @@ void LuckyCompView::sync()
     const auto controls = modes::constrain (mode, owner.getControls());
     const auto detector = owner.getDetectorSettings();
     hitView.update (detector, lucky::example_hit::windowSeconds, owner.getBlend(), owner.getColour());
-    knobs[colour].setValue (owner.getParameters().getRawParameterValue (LuckyCompProcessor::colourId)->load());
+    knobs[colour].setValue (owner.getParameters().getRawParameterValue (LuckyCompressorProcessor::colourId)->load());
     const auto blendMode = owner.isBlendMode();
     if (shownBlendMode != blendMode)
     {
         shownBlendMode = blendMode;
-        knobs[mix].setSpec (blendMode ? blendSpec (*owner.getParameters().getParameter (LuckyCompProcessor::blendId)) : mixSpec());
+        knobs[mix].setSpec (blendMode ? blendSpec (*owner.getParameters().getParameter (LuckyCompressorProcessor::blendId)) : mixSpec());
         mixTabs.setChosen (blendMode ? 1 : 0);
     }
-    knobs[mix].setValue (owner.getParameters().getRawParameterValue (blendMode ? LuckyCompProcessor::blendId : LuckyCompProcessor::mixId)->load());
+    knobs[mix].setValue (owner.getParameters().getRawParameterValue (blendMode ? LuckyCompressorProcessor::blendId : LuckyCompressorProcessor::mixId)->load());
 
     knobs[amount].setValue (controls.thresholdDb);
     knobs[ratio].setValue (controls.ratio);
@@ -579,19 +579,19 @@ void LuckyCompView::sync()
     }
 
     const auto& parameters = owner.getParameters();
-    if (const auto comparingNow = parameters.getRawParameterValue (LuckyCompProcessor::bypassId)->load() > 0.5f; comparing != comparingNow)
+    if (const auto comparingNow = parameters.getRawParameterValue (LuckyCompressorProcessor::bypassId)->load() > 0.5f; comparing != comparingNow)
     {
         comparing = comparingNow;
         applyAccent();
     }
-    const auto matching = parameters.getRawParameterValue (LuckyCompProcessor::matchId)->load() > 0.5f;
+    const auto matching = parameters.getRawParameterValue (LuckyCompressorProcessor::matchId)->load() > 0.5f;
     matchSwitch.setOn (matching);
     compareNotice.setBody (matching ? "Your sound without compression, at the same loudness." : "Your sound without compression.");
     liveView.setThreshold (detector.thresholdDb);
     liveView.repaint();
 }
 
-void LuckyCompView::timerCallback()
+void LuckyCompressorView::timerCallback()
 {
     if (focusTriesLeft > 0 && isShowing())
     {
@@ -601,19 +601,19 @@ void LuckyCompView::timerCallback()
     sync();
 }
 
-juce::Rectangle<int> LuckyCompView::stripArea() const
+juce::Rectangle<int> LuckyCompressorView::stripArea() const
 {
     return getLocalBounds().removeFromBottom (stripHeight);
 }
 
-juce::Rectangle<int> LuckyCompView::tipsArea() const
+juce::Rectangle<int> LuckyCompressorView::tipsArea() const
 {
     if (! tipsShown)
         return {};
     return getLocalBounds().withTrimmedTop (topBarHeight).removeFromTop (tipsHeight);
 }
 
-void LuckyCompView::resized()
+void LuckyCompressorView::resized()
 {
     auto bounds = getLocalBounds();
     auto top = bounds.removeFromTop (topBarHeight);
@@ -650,7 +650,7 @@ void LuckyCompView::resized()
     mixTabs.setBounds (knobs[mix].getBounds().withHeight (Knob::labelHeight + 4).withSizeKeepingCentre (130, Knob::labelHeight + 4));
 }
 
-void LuckyCompView::paint (juce::Graphics& g)
+void LuckyCompressorView::paint (juce::Graphics& g)
 {
     using namespace lucky;
     g.fillAll (theme::background);
@@ -667,7 +667,7 @@ void LuckyCompView::paint (juce::Graphics& g)
     ripple::paint (g, logo, colourOfMode);
     g.setColour (theme::text);
     g.setFont (theme::labelFont (17.0f).withStyle ("Bold"));
-    g.drawText ("LUCKY COMP", juce::Rectangle<int> (60, 0, brandWidth - 64, topBarHeight), juce::Justification::centredLeft);
+    g.drawText ("LUCKY COMPRESSOR", juce::Rectangle<int> (54, 0, brandWidth - 58, topBarHeight), juce::Justification::centredLeft);
 
     g.setColour (theme::strip);
     g.fillRect (liveView.getRight(), liveView.getY(), 1, liveView.getHeight());
@@ -693,7 +693,7 @@ void LuckyCompView::paint (juce::Graphics& g)
 
 }
 
-bool LuckyCompView::keyPressed (const juce::KeyPress& key)
+bool LuckyCompressorView::keyPressed (const juce::KeyPress& key)
 {
     if (key.getTextCharacter() == 's' || key.getTextCharacter() == 'S')
     {
@@ -709,15 +709,15 @@ bool LuckyCompView::keyPressed (const juce::KeyPress& key)
     return false;
 }
 
-void LuckyCompView::mouseDown (const juce::MouseEvent&)
+void LuckyCompressorView::mouseDown (const juce::MouseEvent&)
 {
     grabKeyboardFocus();
 }
 
-void LuckyCompView::showMenu()
+void LuckyCompressorView::showMenu()
 {
     juce::PopupMenu menu;
-    menu.addSectionHeader (juce::String ("Lucky Comp v") + JucePlugin_VersionString);
+    menu.addSectionHeader (juce::String ("Lucky Compressor v") + JucePlugin_VersionString);
     if (addWindowSizeMenu)
         addWindowSizeMenu (menu);
     juce::PopupMenu::Item compareItem ("Compare with uncompressed");
@@ -746,13 +746,13 @@ void LuckyCompView::showMenu()
     menu.showMenuAsync (juce::PopupMenu::Options().withTargetComponent (&menuButton));
 }
 
-void LuckyCompView::setReductionShown (bool shown)
+void LuckyCompressorView::setReductionShown (bool shown)
 {
     liveView.setReductionShown (shown);
     settings->setBool (showReductionKey, shown);
 }
 
-void LuckyCompView::eyeClicked()
+void LuckyCompressorView::eyeClicked()
 {
     if (liveView.isReductionShown() || ! settings->getBool (askBeforeReductionKey, true))
     {
@@ -760,7 +760,7 @@ void LuckyCompView::eyeClicked()
         return;
     }
 
-    const juce::Component::SafePointer<LuckyCompView> safe (this);
+    const juce::Component::SafePointer<LuckyCompressorView> safe (this);
     auto prompt = std::make_unique<lucky::RevealPrompt> (
         lucky::theme::modeColour (owner.getMode()),
         [safe] (bool show, bool dontAskAgain)
@@ -780,8 +780,8 @@ void LuckyCompView::eyeClicked()
     juce::CallOutBox::launchAsynchronously (std::move (prompt), getReductionButtonArea(), this);
 }
 
-LuckyCompEditor::LuckyCompEditor (LuckyCompProcessor& processorToEdit)
-    : ScaledEditor (processorToEdit, LuckyCompView::baseWidth, LuckyCompView::baseHeight), view (processorToEdit)
+LuckyCompressorEditor::LuckyCompressorEditor (LuckyCompressorProcessor& processorToEdit)
+    : ScaledEditor (processorToEdit, LuckyCompressorView::baseWidth, LuckyCompressorView::baseHeight), view (processorToEdit)
 {
     view.addWindowSizeMenu = [this] (juce::PopupMenu& menu) { ScaledEditor::addWindowSizeMenu (menu); };
     setView (view);

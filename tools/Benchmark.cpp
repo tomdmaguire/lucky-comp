@@ -5,16 +5,16 @@
 
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter();
 
-/** Measures Lucky Comp's CPU cost: the audio thread per instance, in every mode and at several buffer sizes; the
+/** Measures Lucky Compressor's CPU cost: the audio thread per instance, in every mode and at several buffer sizes; the
     level-match prediction the background thread runs while a knob moves; and the Lab's simulation, which the editor
     reruns on every settings change.
 
-    LuckyCompBench [seconds of audio per run, default 20] */
+    LuckyCompressorBench [seconds of audio per run, default 20] */
 namespace
 {
 constexpr double rate = 48000.0;
 
-void setParameter (LuckyCompProcessor& processor, const juce::String& id, float value)
+void setParameter (LuckyCompressorProcessor& processor, const juce::String& id, float value)
 {
     auto* parameter = processor.getParameters().getParameter (id);
     parameter->setValueNotifyingHost (parameter->convertTo0to1 (value));
@@ -25,12 +25,12 @@ double secondsSince (double startMs) { return (juce::Time::getMillisecondCounter
 /** Fraction of one core used to process the audio in real time, and the slowest block against its deadline. */
 std::pair<double, double> audioLoad (lucky::Mode mode, int blockSize, double seconds)
 {
-    std::unique_ptr<LuckyCompProcessor> processor (dynamic_cast<LuckyCompProcessor*> (createPluginFilter()));
+    std::unique_ptr<LuckyCompressorProcessor> processor (dynamic_cast<LuckyCompressorProcessor*> (createPluginFilter()));
     processor->setPlayConfigDetails (2, 2, rate, blockSize);
     processor->prepareToPlay (rate, blockSize);
     processor->switchMode (mode);
-    setParameter (*processor, LuckyCompProcessor::thresholdId, -30.0f);
-    setParameter (*processor, LuckyCompProcessor::mixId, 60.0f);
+    setParameter (*processor, LuckyCompressorProcessor::thresholdId, -30.0f);
+    setParameter (*processor, LuckyCompressorProcessor::mixId, 60.0f);
 
     const auto loop = lucky::test::drumLoop (rate);
     juce::AudioBuffer<float> block (2, blockSize);
@@ -75,7 +75,7 @@ int main (int argc, char** argv)
         std::cout << "\n";
     }
 
-    std::unique_ptr<LuckyCompProcessor> processor (dynamic_cast<LuckyCompProcessor*> (createPluginFilter()));
+    std::unique_ptr<LuckyCompressorProcessor> processor (dynamic_cast<LuckyCompressorProcessor*> (createPluginFilter()));
     processor->setPlayConfigDetails (2, 2, rate, 512);
     processor->prepareToPlay (rate, 512);
     const auto loop = lucky::test::drumLoop (rate);
@@ -90,11 +90,11 @@ int main (int argc, char** argv)
     auto start = juce::Time::getMillisecondCounterHiRes();
     for (int i = 0; i < predictions; ++i)
     {
-        setParameter (*processor, LuckyCompProcessor::thresholdId, -20.0f - static_cast<float> (i % 10));
+        setParameter (*processor, LuckyCompressorProcessor::thresholdId, -20.0f - static_cast<float> (i % 10));
         processor->updateLevelMatch();
     }
     const auto predictMs = secondsSince (start) * 1000.0 / predictions;
-    const auto intervalMs = LuckyCompProcessor::matchIntervalSeconds * 1000.0;
+    const auto intervalMs = LuckyCompressorProcessor::matchIntervalSeconds * 1000.0;
     std::cout << "\nLevel match, one prediction with a full 3 s history: " << juce::String (predictMs, 2) << " ms (at most every "
               << juce::String (juce::roundToInt (intervalMs)) << " ms while a setting changes, so " << juce::String (juce::roundToInt (predictMs / (intervalMs + predictMs) * 100.0))
               << "% of a background core while dragging; none while Level Match is off)\n";

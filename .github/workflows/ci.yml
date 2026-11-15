@@ -33,7 +33,7 @@ jobs:
         run: cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DLUCKY_LABS_DIR="$GITHUB_WORKSPACE/lucky-labs"
 
       - name: Build plugins and tests
-        run: cmake --build build --target LuckyComp_VST3 LuckyComp_AU LuckyCompTests LuckyCompProcessorTests
+        run: cmake --build build --target LuckyCompressor_VST3 LuckyCompressor_AU LuckyCompressorTests LuckyCompressorProcessorTests
 
       - name: Test
         run: ctest --test-dir build --output-on-failure
@@ -41,6 +41,6 @@ jobs:
       - name: Validate the Audio Unit
         run: |
           mkdir -p ~/Library/Audio/Plug-Ins/Components
-          cp -R "build/LuckyComp_artefacts/Release/AU/Lucky Comp.component" ~/Library/Audio/Plug-Ins/Components/
+          cp -R "build/LuckyCompressor_artefacts/Release/AU/Lucky Compressor.component" ~/Library/Audio/Plug-Ins/Components/
           killall -9 AudioComponentRegistrar || true
           auval -v aufx Lcmp Lcky

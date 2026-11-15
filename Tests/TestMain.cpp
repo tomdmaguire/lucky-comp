@@ -4,7 +4,7 @@ int main()
 {
     juce::UnitTestRunner runner;
     runner.setAssertOnFailure (false);
-    runner.runTestsInCategory ("Lucky Comp");
+    runner.runTestsInCategory ("Lucky Compressor");
 
     for (int i = 0; i < runner.getNumResults(); ++i)
         if (runner.getResult (i)->failures > 0)

@@ -5,13 +5,13 @@
 #include <iostream>
 #include <numbers>
 
-/** Measures Lucky Comp, or hardware through an audio interface, for Lucky Comp's colour and dynamics models.
+/** Measures Lucky Compressor, or hardware through an audio interface, for Lucky Compressor's colour and dynamics models.
     See docs/colour-plan.md.
 
-    LuckyCompMeasure <plugin.vst3> params
-    LuckyCompMeasure <plugin.vst3> [Name=value ...] <test> <out.csv>
-    LuckyCompMeasure --devices
-    LuckyCompMeasure --hardware "<device name>" <output channel> <input channel> <test> <out.csv>
+    LuckyCompressorMeasure <plugin.vst3> params
+    LuckyCompressorMeasure <plugin.vst3> [Name=value ...] <test> <out.csv>
+    LuckyCompressorMeasure --devices
+    LuckyCompressorMeasure --hardware "<device name>" <output channel> <input channel> <test> <out.csv>
 
     Plugin values are the parameter's own text (e.g. "Ratio=4") or a normalised 0-1 number written as "Name=@0.5".
     Hardware: the test signal plays from the output channel (1-based) and is recorded from the input channel; the
@@ -402,7 +402,7 @@ int main (int argc, char** argv)
 {
     if (argc < 3 && ! (argc == 2 && juce::String (argv[1]) == "--devices"))
     {
-        std::cerr << "usage: LuckyCompMeasure <plugin.vst3> params | [Name=value ...] <test> <out.csv> | --devices | --hardware\n";
+        std::cerr << "usage: LuckyCompressorMeasure <plugin.vst3> params | [Name=value ...] <test> <out.csv> | --devices | --hardware\n";
         return 1;
     }
 
@@ -428,7 +428,7 @@ int main (int argc, char** argv)
     {
         if (argc != 7)
         {
-            std::cerr << "usage: LuckyCompMeasure --hardware \"<device>\" <output channel> <input channel> <test> <out.csv>\n";
+            std::cerr << "usage: LuckyCompressorMeasure --hardware \"<device>\" <output channel> <input channel> <test> <out.csv>\n";
             return 1;
         }
         HardwareLink link (argv[2], juce::String (argv[3]).getIntValue(), juce::String (argv[4]).getIntValue());

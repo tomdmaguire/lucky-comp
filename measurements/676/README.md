@@ -1,7 +1,7 @@
 # Behringer 676 measurements
 
-Our own Behringer 676 (FET compressor section, 1176-style), measured with `LuckyCompMeasure --hardware` on
-2026-11-13. Used to set Lucky Comp's FET colour while compressing (see `docs/colour-sources.md`).
+Our own Behringer 676 (FET compressor section, 1176-style), measured with `LuckyCompressorMeasure --hardware` on
+2026-11-13. Used to set Lucky Compressor's FET colour while compressing (see `docs/colour-sources.md`).
 
 ## Setup
 
