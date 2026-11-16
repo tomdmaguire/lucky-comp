@@ -1,6 +1,6 @@
 # Lucky Compressor
 
-Compression by ear. Lucky Compressor is a free compressor for macOS (VST®3 and AU) that sounds great in a real mix and teaches you how compression works, and how the classic compressors differ, while you use it: four modes in the style of the classics on one set of dials, level matching so you hear the compression rather than the loudness, and a Lab that shows what your settings do to a single snare hit.
+Compression, made clear. Lucky Compressor is a free compressor for macOS (VST®3 and AU) that sounds great in a real mix and teaches you how compression works, and how the classic compressors differ, while you use it: four modes in the style of the classics on one set of dials, level matching so you hear the compression rather than the loudness, and a Lab that shows what your settings do to a single snare hit.
 
 **[Website and download](https://tomdmaguire.github.io/lucky-compressor/)** · a sibling of [Lucky Reverb](https://github.com/tomdmaguire/lucky-reverb) and [Lucky Reference](https://github.com/tomdmaguire/lucky-reference) · product spec in [`docs/spec.md`](docs/spec.md)
 
