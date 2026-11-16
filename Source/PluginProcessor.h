@@ -90,6 +90,10 @@ public:
         matchIntervalSeconds and only while Level Match is on; tests call it directly. */
     bool updateLevelMatch();
 
+    /** Turns the background level-match thread's predictions on or off (on by default). Tests and tools turn it off
+        so their direct updateLevelMatch() calls never race with it. */
+    void setBackgroundMatching (bool shouldMatch) noexcept { backgroundMatching.store (shouldMatch); }
+
     /** True while Level Match is on. */
     bool isMatching() const noexcept { return matchParameter->load() > 0.5f; }
 
@@ -122,6 +126,7 @@ private:
     std::atomic<float>* blendParameter = nullptr;
     std::atomic<float>* colourParameter = nullptr;
     juce::SpinLock matchLock;
+    std::atomic<bool> backgroundMatching { true };
     std::optional<lucky::DetectorSettings> matchedSettings;
     long long matchedSound = 0;
     lucky::Blend matchedBlend;

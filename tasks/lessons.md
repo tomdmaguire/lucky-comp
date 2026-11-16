@@ -13,3 +13,7 @@ Lessons for every Lucky plugin live in `../lucky-labs/docs/lessons.md`; read the
 ## Confirm hardware knob positions with a measurement
 - **Mistake:** a slow-release run was really a slow-attack run (the wrong knob was turned); identical results were the only clue.
 - **Rule:** when a hardware setting change should alter the result and doesn't, check the setting (e.g. with `timing`) before interpreting it.
+
+## Tests must not race the plug-in's own threads
+- **Mistake:** processor tests called `updateLevelMatch()` while the processor's background thread also ran it; its try-lock made a test call a silent no-op whenever the thread held the lock, so CI failed at random ("1 -> 1").
+- **Rule:** when a test drives something a plug-in thread also drives, turn the thread's work off in the test fixture (`setBackgroundMatching (false)`) instead of hoping the timing works out.

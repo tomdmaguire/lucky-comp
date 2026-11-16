@@ -11,6 +11,7 @@ constexpr int blockSize = 512;
 std::unique_ptr<LuckyCompressorProcessor> makeProcessor()
 {
     std::unique_ptr<LuckyCompressorProcessor> processor (dynamic_cast<LuckyCompressorProcessor*> (createPluginFilter()));
+    processor->setBackgroundMatching (false);
     processor->setPlayConfigDetails (2, 2, rate, blockSize);
     processor->prepareToPlay (rate, blockSize);
     return processor;

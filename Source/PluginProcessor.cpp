@@ -79,7 +79,7 @@ void LuckyCompressorProcessor::run()
     while (! threadShouldExit())
     {
         const auto now = juce::Time::getMillisecondCounterHiRes();
-        if (! isNonRealtime() && isMatching() && now - lastPredictionMs >= matchIntervalSeconds * 1000.0 && updateLevelMatch())
+        if (backgroundMatching.load() && ! isNonRealtime() && isMatching() && now - lastPredictionMs >= matchIntervalSeconds * 1000.0 && updateLevelMatch())
             lastPredictionMs = now;
         wait (15);
     }

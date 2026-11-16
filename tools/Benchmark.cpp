@@ -26,6 +26,7 @@ double secondsSince (double startMs) { return (juce::Time::getMillisecondCounter
 std::pair<double, double> audioLoad (lucky::Mode mode, int blockSize, double seconds)
 {
     std::unique_ptr<LuckyCompressorProcessor> processor (dynamic_cast<LuckyCompressorProcessor*> (createPluginFilter()));
+    processor->setBackgroundMatching (false);
     processor->setPlayConfigDetails (2, 2, rate, blockSize);
     processor->prepareToPlay (rate, blockSize);
     processor->switchMode (mode);
@@ -76,6 +77,7 @@ int main (int argc, char** argv)
     }
 
     std::unique_ptr<LuckyCompressorProcessor> processor (dynamic_cast<LuckyCompressorProcessor*> (createPluginFilter()));
+    processor->setBackgroundMatching (false);
     processor->setPlayConfigDetails (2, 2, rate, 512);
     processor->prepareToPlay (rate, 512);
     const auto loop = lucky::test::drumLoop (rate);
