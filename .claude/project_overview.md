@@ -1,6 +1,6 @@
 # Lucky Compressor: project overview
 
-JUCE 9 (CMake + Ninja, FetchContent) VST3 compressor that teaches you to hear compression. Sibling of Lucky Reverb (`../lucky-seven`) and Lucky Reference (`../lucky-reference`). AGPLv3. The agreed v1 behaviour is in `docs/spec.md`; `prototype/index.html` is the browser prototype the layout came from (spec wins where they differ).
+JUCE 9 (CMake + Ninja, FetchContent) VST3 compressor that teaches you to hear compression. Sibling of Lucky Reverb (`../lucky-reverb`) and Lucky Reference (`../lucky-reference`). AGPLv3. The agreed v1 behaviour is in `docs/spec.md`; `prototype/index.html` is the browser prototype the layout came from (spec wins where they differ).
 
 ## Layout
 - `Source/dsp/Modes.*`: `Mode` (Clean, FET, Opto, VCA), `Controls` (user values in real units), `DetectorSettings` (what runs). `modes::constrain` clamps/snaps per mode, `modes::resolve` adds knee and release shape. FET dial <-> ms helpers, `snapLog`, per-mode `defaults`.
@@ -17,7 +17,7 @@ JUCE 9 (CMake + Ninja, FetchContent) VST3 compressor that teaches you to hear co
 
 ## Notes
 - Needs `../lucky-labs` checked out beside it (`LUCKY_LABS_DIR`).
-- Configure with `-DFETCHCONTENT_SOURCE_DIR_JUCE=../lucky-seven/build/_deps/juce-src` to reuse the JUCE checkout.
+- Configure with `-DFETCHCONTENT_SOURCE_DIR_JUCE=../lucky-reverb/build/_deps/juce-src` to reuse the JUCE checkout.
 - The VST3 isn't installed unless `LUCKY_COMPRESSOR_INSTALL_AFTER_BUILD=ON`.
 - `Source/dsp/Colour.*`: per-mode tone on the wet signal (envelope-normalised x²/x³ waveshaper with DC blocker; Opto high/low-pass), voiced from published hardware figures in docs/colour-sources.md (never from plugin output). `tools/Measure.cpp` (`LuckyCompressorMeasure`): headless measuring host for Lucky Compressor, or hardware via `--hardware <device> <out> <in>` (aligned with a click); only measure third-party plugins whose licence allows it. Only our own measurements are committed (`measurements/`).
 - Behringer 676: measured (`measurements/676/`, `docs/676-comparison.md`); FET's compressing harmonics come from it. Still to measure: release at dial 7 (the 676 measured 223 ms, the manual says 50 ms), a Ratio 4 curve, attack times, absolute dBu levels.
